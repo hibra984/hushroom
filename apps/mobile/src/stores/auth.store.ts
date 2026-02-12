@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { apiClient, ApiClientError } from '@/lib/api-client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiClient, ApiClientError } from '../lib/api-client';
 
 interface User {
   id: string;
@@ -36,7 +37,7 @@ interface AuthState {
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
   clearError: () => void;
-  initialize: () => void;
+  initialize: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -49,8 +50,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await apiClient.post<AuthResponse>('/auth/register', data);
-      localStorage.setItem('accessToken', res.accessToken);
-      localStorage.setItem('refreshToken', res.refreshToken);
+      await AsyncStorage.setItem('accessToken', res.accessToken);
+      await AsyncStorage.setItem('refreshToken', res.refreshToken);
       set({ user: res.user, isAuthenticated: true, isLoading: false });
     } catch (e) {
       const msg = e instanceof ApiClientError ? e.message : 'Registration failed';
@@ -63,8 +64,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await apiClient.post<AuthResponse>('/auth/login', { email, password });
-      localStorage.setItem('accessToken', res.accessToken);
-      localStorage.setItem('refreshToken', res.refreshToken);
+      await AsyncStorage.setItem('accessToken', res.accessToken);
+      await AsyncStorage.setItem('refreshToken', res.refreshToken);
       set({ user: res.user, isAuthenticated: true, isLoading: false });
     } catch (e) {
       const msg = e instanceof ApiClientError ? e.message : 'Login failed';
@@ -74,7 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
     try {
       if (refreshToken) {
         await apiClient.post('/auth/logout', { refreshToken });
@@ -82,14 +83,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       // Ignore logout errors
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      await AsyncStorage.multiRemove(['accessToken', 'refreshToken']);
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 
   refreshAuth: async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
     if (!refreshToken) {
       set({ isLoading: false });
       return;
@@ -99,33 +99,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         '/auth/refresh',
         { refreshToken },
       );
-      localStorage.setItem('accessToken', res.accessToken);
-      localStorage.setItem('refreshToken', res.refreshToken);
+      await AsyncStorage.setItem('accessToken', res.accessToken);
+      await AsyncStorage.setItem('refreshToken', res.refreshToken);
 
       const user = await apiClient.get<User>('/users/me');
       set({ user, isAuthenticated: true, isLoading: false });
     } catch {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      await AsyncStorage.multiRemove(['accessToken', 'refreshToken']);
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 
   clearError: () => set({ error: null }),
 
-  initialize: () => {
-    const token = localStorage.getItem('accessToken');
+  initialize: async () => {
+    const token = await AsyncStorage.getItem('accessToken');
     if (!token) {
       set({ isLoading: false });
       return;
     }
-    // Try to fetch current user with existing token
-    apiClient
-      .get<User>('/users/me')
-      .then((user) => set({ user, isAuthenticated: true, isLoading: false }))
-      .catch(() => {
-        // Token expired, try refresh
-        get().refreshAuth();
-      });
+    try {
+      const user = await apiClient.get<User>('/users/me');
+      set({ user, isAuthenticated: true, isLoading: false });
+    } catch {
+      await get().refreshAuth();
+    }
   },
 }));
