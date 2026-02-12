@@ -1,0 +1,413 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  COMPANION
+  ADMIN
+}
+
+enum CompanionType {
+  STANDARD
+  VERIFIED
+  EXPERT
+}
+
+enum CompanionStatus {
+  PENDING_REVIEW
+  APPROVED
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum SessionType {
+  FOCUS
+  DECISION
+  EMOTIONAL_UNLOAD
+  PLANNING
+}
+
+enum SessionStatus {
+  PENDING_MATCH
+  MATCHED
+  PAYMENT_AUTHORIZED
+  READY
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELLED
+  ABANDONED
+  DISPUTED
+}
+
+enum ContractMode {
+  STRICT
+  MODERATE
+  FLEXIBLE
+}
+
+enum DriftSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  FAILED
+  CANCELLED
+}
+
+enum RefundReason {
+  TECHNICAL_FAILURE
+  COMPANION_NO_SHOW
+  ADMIN_OVERRIDE
+}
+
+enum AvailabilityDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum AuditAction {
+  USER_REGISTER
+  USER_LOGIN
+  USER_DELETE
+  SESSION_CREATE
+  SESSION_START
+  SESSION_END
+  PAYMENT_AUTHORIZE
+  PAYMENT_CAPTURE
+  PAYMENT_REFUND
+  COMPANION_APPROVE
+  COMPANION_SUSPEND
+  ADMIN_ACTION
+  DATA_EXPORT
+  DATA_DELETION
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  passwordHash      String
+  firstName         String?
+  lastName          String?
+  displayName       String?
+  dateOfBirth       DateTime
+  role              UserRole  @default(USER)
+  isEmailVerified   Boolean   @default(false)
+  isAgeVerified     Boolean   @default(false)
+  avatarUrl         String?
+  preferredLanguage String    @default("en")
+  timezone          String    @default("UTC")
+  isActive          Boolean   @default(true)
+  deletedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  companionProfile    CompanionProfile?
+  sessionsAsUser      Session[]            @relation("UserSessions")
+  ratingsGiven        Rating[]             @relation("RaterRelation")
+  ratingsReceived     Rating[]             @relation("RatedRelation")
+  payments            Payment[]
+  languagePreferences LanguagePreference[]
+  refreshTokens       RefreshToken[]
+  auditLogs           AuditLog[]
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  ipAddress String?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model CompanionProfile {
+  id                     String          @id @default(uuid())
+  userId                 String          @unique
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                   CompanionType   @default(STANDARD)
+  status                 CompanionStatus @default(PENDING_REVIEW)
+  bio                    String?
+  baseRate               Decimal         @db.Decimal(10, 2)
+  expertPremium          Decimal?        @db.Decimal(10, 2)
+  expertiseTags          String[]
+  certifications         Json?
+  identityVerified       Boolean         @default(false)
+  stripeConnectAccountId String?         @unique
+  totalSessions          Int             @default(0)
+  successRate            Decimal         @default(0) @db.Decimal(5, 2)
+  averageRating          Decimal         @default(0) @db.Decimal(3, 2)
+  reputationScore        Decimal         @default(0) @db.Decimal(5, 2)
+  driftEnforcement       ContractMode    @default(MODERATE)
+  maxConcurrent          Int             @default(1)
+  isOnline               Boolean         @default(false)
+  lastActiveAt           DateTime?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  availability Availability[]
+  sessions     Session[]      @relation("CompanionSessions")
+
+  @@index([type, status])
+  @@index([isOnline])
+  @@index([reputationScore])
+  @@map("companion_profiles")
+}
+
+model Availability {
+  id           String           @id @default(uuid())
+  companionId  String
+  companion    CompanionProfile @relation(fields: [companionId], references: [id], onDelete: Cascade)
+  dayOfWeek    AvailabilityDay
+  startTime    String
+  endTime      String
+  timezone     String           @default("UTC")
+  isRecurring  Boolean          @default(true)
+  specificDate DateTime?
+  isBlocked    Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@unique([companionId, dayOfWeek, startTime, endTime])
+  @@index([companionId])
+  @@index([dayOfWeek])
+  @@map("availability")
+}
+
+model Session {
+  id                 String           @id @default(uuid())
+  userId             String
+  user               User             @relation("UserSessions", fields: [userId], references: [id])
+  companionId        String?
+  companion          CompanionProfile? @relation("CompanionSessions", fields: [companionId], references: [id])
+  type               SessionType
+  status             SessionStatus    @default(PENDING_MATCH)
+  scheduledAt        DateTime?
+  startedAt          DateTime?
+  endedAt            DateTime?
+  durationMinutes    Int?
+  plannedDuration    Int              @default(30)
+  livekitRoomName    String?          @unique
+  metadata           Json?
+  cancellationReason String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  goal      Goal?
+  contract  Contract?
+  driftLogs DriftLog[]
+  ratings   Rating[]
+  payment   Payment?
+
+  @@index([userId])
+  @@index([companionId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([type])
+  @@map("sessions")
+}
+
+model Goal {
+  id              String   @id @default(uuid())
+  sessionId       String   @unique
+  session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  successCriteria String[]
+  keywords        String[]
+  isAchieved      Boolean?
+  achievementNote String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([sessionId])
+  @@map("goals")
+}
+
+model Contract {
+  id                  String       @id @default(uuid())
+  sessionId           String       @unique
+  session             Session      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  templateId          String?
+  mode                ContractMode @default(MODERATE)
+  rules               Json
+  acceptedByUser      Boolean      @default(false)
+  acceptedByCompanion Boolean      @default(false)
+  acceptedAt          DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@index([sessionId])
+  @@map("contracts")
+}
+
+model ContractTemplate {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  description String
+  sessionType SessionType
+  mode        ContractMode
+  rules       Json
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([sessionType])
+  @@index([isActive])
+  @@map("contract_templates")
+}
+
+model DriftLog {
+  id             String        @id @default(uuid())
+  sessionId      String
+  session        Session       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  severity       DriftSeverity
+  message        String
+  triggerType    String
+  triggerData    Json?
+  acknowledgedBy String?
+  acknowledgedAt DateTime?
+  timestamp      DateTime      @default(now())
+
+  @@index([sessionId])
+  @@index([severity])
+  @@map("drift_logs")
+}
+
+model Rating {
+  id                String  @id @default(uuid())
+  sessionId         String
+  session           Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  raterId           String
+  rater             User    @relation("RaterRelation", fields: [raterId], references: [id])
+  ratedUserId       String
+  ratedUser         User    @relation("RatedRelation", fields: [ratedUserId], references: [id])
+  overallScore      Int
+  goalAchievement   Int?
+  presenceQuality   Int?
+  contractAdherence Int?
+  communication     Int?
+  comment           String?
+  isPublic          Boolean @default(false)
+  createdAt         DateTime @default(now())
+
+  @@unique([sessionId, raterId])
+  @@index([sessionId])
+  @@index([ratedUserId])
+  @@map("ratings")
+}
+
+model Payment {
+  id                    String        @id @default(uuid())
+  sessionId             String        @unique
+  session               Session       @relation(fields: [sessionId], references: [id])
+  userId                String
+  user                  User          @relation(fields: [userId], references: [id])
+  stripePaymentIntentId String?       @unique
+  stripeCustomerId      String?
+  amount                Decimal       @db.Decimal(10, 2)
+  companionPayout       Decimal       @db.Decimal(10, 2)
+  platformFee           Decimal       @db.Decimal(10, 2)
+  commissionRate        Decimal       @db.Decimal(5, 4)
+  currency              String        @default("EUR")
+  status                PaymentStatus @default(PENDING)
+  authorizedAt          DateTime?
+  capturedAt            DateTime?
+  refundedAt            DateTime?
+  refundAmount          Decimal?      @db.Decimal(10, 2)
+  refundReason          RefundReason?
+  metadata              Json?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([status])
+  @@index([stripePaymentIntentId])
+  @@map("payments")
+}
+
+model LanguagePreference {
+  id          String  @id @default(uuid())
+  userId      String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language    String
+  proficiency String  @default("native")
+  isPreferred Boolean @default(false)
+
+  @@unique([userId, language])
+  @@index([userId])
+  @@index([language])
+  @@map("language_preferences")
+}
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  userId     String?
+  user       User?       @relation(fields: [userId], references: [id])
+  action     AuditAction
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  timestamp  DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+model AbuseReport {
+  id             String    @id @default(uuid())
+  reporterId     String
+  reportedUserId String
+  sessionId      String?
+  reason         String
+  description    String
+  status         String    @default("PENDING")
+  adminNotes     String?
+  resolvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([reportedUserId])
+  @@index([status])
+  @@map("abuse_reports")
+}

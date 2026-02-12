@@ -1,0 +1,14 @@
+export default function EvaluatePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center p-8">
+      <h1 className="mb-4 text-2xl font-bold">Session Evaluation</h1>
+      <p className="text-gray-400">
+        Rate and provide feedback on your session experience.
+      </p>
+    </div>
+  );
+}

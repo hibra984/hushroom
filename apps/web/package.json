@@ -1,0 +1,37 @@
+{
+  "name": "@hushroom/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings 0",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.0",
+    "socket.io-client": "^4.8.0",
+    "@livekit/components-react": "^2.0.0",
+    "livekit-client": "^2.0.0",
+    "i18next": "^24.0.0",
+    "react-i18next": "^15.0.0",
+    "zod": "^3.24.0",
+    "@hushroom/shared-types": "workspace:*",
+    "@hushroom/shared-validators": "workspace:*",
+    "@hushroom/shared-constants": "workspace:*"
+  },
+  "devDependencies": {
+    "@hushroom/tsconfig": "workspace:*",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "postcss": "^8.5.0",
+    "eslint": "^9.0.0"
+  }
+}

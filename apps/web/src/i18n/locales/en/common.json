@@ -1,0 +1,35 @@
+{
+  "appName": "Hushroom",
+  "tagline": "Structured Human Presence Platform",
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "sessions": "Sessions",
+    "profile": "Profile",
+    "login": "Sign In",
+    "register": "Create Account",
+    "logout": "Sign Out",
+    "companion": "Companion",
+    "availability": "Availability"
+  },
+  "auth": {
+    "loginTitle": "Sign In",
+    "registerTitle": "Create Account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?"
+  },
+  "session": {
+    "active": "Active Session",
+    "evaluate": "Session Evaluation",
+    "bookNew": "Book New Session",
+    "history": "Session History"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "notFound": "Page Not Found",
+    "goHome": "Go Home"
+  }
+}

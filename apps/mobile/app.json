@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "Hushroom",
+    "slug": "hushroom",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "hushroom",
+    "platforms": ["ios", "android"],
+    "newArchEnabled": true
+  }
+}
