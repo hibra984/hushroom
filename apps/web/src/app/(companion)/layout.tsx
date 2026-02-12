@@ -1,29 +1,75 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useAuthStore } from '@/stores/auth.store';
+
 export default function CompanionLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading, logout, initialize } = useAuthStore();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <a href="/" className="text-lg font-bold">
+          <Link href="/companion/dashboard" className="text-lg font-bold">
             Hushroom
             <span className="ml-2 text-xs font-normal text-gray-400">Companion</span>
-          </a>
+          </Link>
           <div className="flex items-center gap-6">
-            <a
+            <Link
               href="/companion/dashboard"
               className="text-sm text-gray-600 hover:text-gray-900"
             >
               Dashboard
-            </a>
-            <a
+            </Link>
+            <Link
               href="/companion/availability"
               className="text-sm text-gray-600 hover:text-gray-900"
             >
               Availability
-            </a>
+            </Link>
+            <span className="text-sm text-gray-400">
+              {user?.displayName || user?.firstName || user?.email}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-red-600 hover:text-red-700"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </nav>
