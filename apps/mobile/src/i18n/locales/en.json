@@ -1,0 +1,59 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "search": "Search",
+    "noResults": "No results found"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "logout": "Sign Out"
+  },
+  "session": {
+    "newSession": "New Session",
+    "activeSession": "Active Session",
+    "history": "Session History",
+    "evaluate": "Evaluate",
+    "timer": "Timer",
+    "drift": "Drift Alert",
+    "goal": "Goal",
+    "contract": "Contract"
+  },
+  "ratings": {
+    "overallScore": "Overall Score",
+    "goalAchievement": "Goal Achievement",
+    "presenceQuality": "Presence Quality",
+    "contractAdherence": "Contract Adherence",
+    "communication": "Communication",
+    "comment": "Comment",
+    "submitRating": "Submit Rating",
+    "ratingSubmitted": "Rating Submitted!",
+    "publicReview": "Make this review public"
+  },
+  "companion": {
+    "profile": "Companion Profile",
+    "availability": "Availability",
+    "earnings": "Earnings",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "sessions": "Sessions",
+    "companions": "Companions",
+    "profile": "Profile",
+    "payments": "Payments",
+    "settings": "Settings"
+  }
+}

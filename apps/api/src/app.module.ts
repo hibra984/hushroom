@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 import { PrismaModule } from './common/prisma/prisma.module';
 import { RedisModule } from './common/redis/redis.module';
@@ -17,6 +18,7 @@ import { RatingsModule } from './modules/ratings/ratings.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
 import { MediaModule } from './modules/media/media.module';
 import { DriftModule } from './modules/drift/drift.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -46,6 +48,13 @@ import { DriftModule } from './modules/drift/drift.module';
     AvailabilityModule,
     MediaModule,
     DriftModule,
+    AdminModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

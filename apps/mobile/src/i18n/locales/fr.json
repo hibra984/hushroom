@@ -1,0 +1,59 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "back": "Retour",
+    "submit": "Soumettre",
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "search": "Rechercher",
+    "noResults": "Aucun r\u00e9sultat"
+  },
+  "auth": {
+    "signIn": "Connexion",
+    "signUp": "Inscription",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oubli\u00e9 ?",
+    "logout": "D\u00e9connexion"
+  },
+  "session": {
+    "newSession": "Nouvelle session",
+    "activeSession": "Session active",
+    "history": "Historique",
+    "evaluate": "\u00c9valuer",
+    "timer": "Minuteur",
+    "drift": "Alerte de d\u00e9rive",
+    "goal": "Objectif",
+    "contract": "Contrat"
+  },
+  "ratings": {
+    "overallScore": "Note globale",
+    "goalAchievement": "Atteinte de l'objectif",
+    "presenceQuality": "Qualit\u00e9 de pr\u00e9sence",
+    "contractAdherence": "Respect du contrat",
+    "communication": "Communication",
+    "comment": "Commentaire",
+    "submitRating": "Soumettre l'\u00e9valuation",
+    "ratingSubmitted": "\u00c9valuation soumise !",
+    "publicReview": "Rendre cet avis public"
+  },
+  "companion": {
+    "profile": "Profil compagnon",
+    "availability": "Disponibilit\u00e9",
+    "earnings": "Revenus",
+    "online": "En ligne",
+    "offline": "Hors ligne"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "dashboard": "Tableau de bord",
+    "sessions": "Sessions",
+    "companions": "Compagnons",
+    "profile": "Profil",
+    "payments": "Paiements",
+    "settings": "Param\u00e8tres"
+  }
+}
