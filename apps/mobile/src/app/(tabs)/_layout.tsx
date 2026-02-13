@@ -12,6 +12,10 @@ export default function TabsLayout() {
         options={{ title: 'Sessions' }}
       />
       <Tabs.Screen
+        name="companions"
+        options={{ title: 'Companions' }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{ title: 'Profile' }}
       />

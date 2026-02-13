@@ -4,6 +4,7 @@ import {
   Text,
   View,
   ScrollView,
+  FlatList,
   TouchableOpacity,
   TextInput,
   Alert,
@@ -19,16 +20,46 @@ const SESSION_TYPES = [
   { key: 'PLANNING', label: 'Planning', description: 'Plan with structured accountability.', duration: 60 },
 ];
 
+interface ScoredCompanion {
+  companionId: string;
+  displayName: string | null;
+  type: string;
+  bio: string | null;
+  baseRate: number;
+  expertPremium: number | null;
+  expertiseTags: string[];
+  averageRating: number;
+  totalSessions: number;
+  isOnline: boolean;
+  score: number;
+  breakdown: {
+    goalMatch: number;
+    reputation: number;
+    fairDistribution: number;
+    priceFit: number;
+  };
+}
+
+const TOTAL_STEPS = 4;
+
 export default function NewSessionScreen() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Step 1: Session type
   const [sessionType, setSessionType] = useState<string | null>(null);
   const [plannedDuration, setPlannedDuration] = useState(30);
+
+  // Step 2: Goal
   const [goalTitle, setGoalTitle] = useState('');
   const [goalDescription, setGoalDescription] = useState('');
   const [successCriteria, setSuccessCriteria] = useState(['']);
+
+  // Step 3: Matching
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [matches, setMatches] = useState<ScoredCompanion[]>([]);
+  const [matchLoading, setMatchLoading] = useState(false);
 
   const addCriteria = () => setSuccessCriteria([...successCriteria, '']);
   const updateCriteria = (index: number, value: string) => {
@@ -37,15 +68,18 @@ export default function NewSessionScreen() {
     setSuccessCriteria(updated);
   };
 
-  const handleSubmit = async () => {
+  const handleCreateAndMatch = async () => {
     if (!sessionType) return;
     setIsLoading(true);
     try {
+      // Create session
       const session = await apiClient.post<{ id: string }>('/sessions', {
         type: sessionType,
         plannedDuration,
       });
+      setSessionId(session.id);
 
+      // Create goal
       await apiClient.post('/goals', {
         sessionId: session.id,
         title: goalTitle,
@@ -53,27 +87,128 @@ export default function NewSessionScreen() {
         successCriteria: successCriteria.filter(Boolean),
       });
 
+      // Create contract
       await apiClient.post('/contracts', {
         sessionId: session.id,
         mode: 'MODERATE',
       });
 
-      Alert.alert('Session Created', 'Your session has been created successfully.', [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
+      // Find matches
+      setStep(3);
+      setMatchLoading(true);
+      const results = await apiClient.post<ScoredCompanion[]>('/matching/find', {
+        sessionId: session.id,
+      });
+      setMatches(results);
     } catch (err) {
       const msg = err instanceof ApiClientError ? err.message : 'Failed to create session';
+      Alert.alert('Error', msg);
+    } finally {
+      setIsLoading(false);
+      setMatchLoading(false);
+    }
+  };
+
+  const handleSelectCompanion = async (companionId: string) => {
+    if (!sessionId) return;
+    setIsLoading(true);
+    try {
+      await apiClient.post('/matching/select', {
+        sessionId,
+        companionId,
+      });
+      setStep(4);
+    } catch (err) {
+      const msg = err instanceof ApiClientError ? err.message : 'Failed to select companion';
       Alert.alert('Error', msg);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleSkipMatching = () => {
+    setStep(4);
+  };
+
+  const renderMatch = ({ item }: { item: ScoredCompanion }) => (
+    <View style={styles.matchCard}>
+      <View style={styles.matchHeader}>
+        <View style={styles.matchNameRow}>
+          <View style={[styles.matchAvatar, !item.isOnline && styles.matchAvatarOff]}>
+            <Text style={styles.matchAvatarText}>
+              {(item.displayName || '?')[0].toUpperCase()}
+            </Text>
+          </View>
+          <View>
+            <Text style={styles.matchName}>{item.displayName || 'Companion'}</Text>
+            <Text style={styles.matchType}>{item.type}</Text>
+          </View>
+        </View>
+        <View style={styles.scoreBadge}>
+          <Text style={styles.scoreText}>{Math.round(item.score * 100)}%</Text>
+        </View>
+      </View>
+
+      {item.bio && (
+        <Text style={styles.matchBio} numberOfLines={2}>{item.bio}</Text>
+      )}
+
+      {item.expertiseTags.length > 0 && (
+        <View style={styles.matchTags}>
+          {item.expertiseTags.slice(0, 3).map((tag) => (
+            <View key={tag} style={styles.matchTag}>
+              <Text style={styles.matchTagText}>{tag}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      <View style={styles.matchStats}>
+        <Text style={styles.matchStat}>{item.averageRating.toFixed(1)} rating</Text>
+        <Text style={styles.matchStatSep}>|</Text>
+        <Text style={styles.matchStat}>{item.totalSessions} sessions</Text>
+        <Text style={styles.matchStatSep}>|</Text>
+        <Text style={styles.matchStat}>${item.baseRate}/hr</Text>
+      </View>
+
+      <View style={styles.breakdownRow}>
+        <View style={styles.breakdownItem}>
+          <Text style={styles.breakdownLabel}>Goal</Text>
+          <Text style={styles.breakdownValue}>{Math.round(item.breakdown.goalMatch * 100)}%</Text>
+        </View>
+        <View style={styles.breakdownItem}>
+          <Text style={styles.breakdownLabel}>Rep</Text>
+          <Text style={styles.breakdownValue}>{Math.round(item.breakdown.reputation * 100)}%</Text>
+        </View>
+        <View style={styles.breakdownItem}>
+          <Text style={styles.breakdownLabel}>Fair</Text>
+          <Text style={styles.breakdownValue}>{Math.round(item.breakdown.fairDistribution * 100)}%</Text>
+        </View>
+        <View style={styles.breakdownItem}>
+          <Text style={styles.breakdownLabel}>Price</Text>
+          <Text style={styles.breakdownValue}>{Math.round(item.breakdown.priceFit * 100)}%</Text>
+        </View>
+      </View>
+
+      <TouchableOpacity
+        style={styles.selectButton}
+        onPress={() => handleSelectCompanion(item.companionId)}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
+          <Text style={styles.selectButtonText}>Select</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Progress */}
       <View style={styles.progress}>
-        {[1, 2].map((s) => (
+        {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
           <View
             key={s}
             style={[styles.progressBar, { backgroundColor: s <= step ? '#2563eb' : '#e5e7eb' }]}
@@ -81,6 +216,7 @@ export default function NewSessionScreen() {
         ))}
       </View>
 
+      {/* Step 1: Session Type */}
       {step === 1 && (
         <View>
           <Text style={styles.heading}>What kind of session?</Text>
@@ -121,6 +257,7 @@ export default function NewSessionScreen() {
         </View>
       )}
 
+      {/* Step 2: Goal */}
       {step === 2 && (
         <View>
           <Text style={styles.heading}>Define your goal</Text>
@@ -168,15 +305,82 @@ export default function NewSessionScreen() {
                 (!goalTitle || !goalDescription) && styles.disabledButton,
               ]}
               disabled={!goalTitle || !goalDescription || isLoading}
-              onPress={handleSubmit}
+              onPress={handleCreateAndMatch}
             >
               {isLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.primaryButtonText}>Create Session</Text>
+                <Text style={styles.primaryButtonText}>Find Companions</Text>
               )}
             </TouchableOpacity>
           </View>
+        </View>
+      )}
+
+      {/* Step 3: Matching Results */}
+      {step === 3 && (
+        <View>
+          <Text style={styles.heading}>Choose a Companion</Text>
+
+          {matchLoading ? (
+            <View style={styles.matchLoadingContainer}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={styles.matchLoadingText}>Finding the best matches...</Text>
+            </View>
+          ) : matches.length === 0 ? (
+            <View style={styles.noMatches}>
+              <Text style={styles.noMatchesTitle}>No companions available</Text>
+              <Text style={styles.noMatchesText}>
+                Try again later or adjust your session settings.
+              </Text>
+              <TouchableOpacity style={styles.primaryButton} onPress={handleSkipMatching}>
+                <Text style={styles.primaryButtonText}>Continue Without Match</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View>
+              <Text style={styles.subtitle}>
+                {matches.length} companion{matches.length !== 1 ? 's' : ''} found
+              </Text>
+              <FlatList
+                data={matches}
+                renderItem={renderMatch}
+                keyExtractor={(item) => item.companionId}
+                scrollEnabled={false}
+              />
+              <TouchableOpacity
+                style={[styles.secondaryButton, { marginBottom: 24 }]}
+                onPress={handleSkipMatching}
+              >
+                <Text style={styles.secondaryButtonText}>Skip for now</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Step 4: Success */}
+      {step === 4 && (
+        <View style={styles.successContainer}>
+          <Text style={styles.successIcon}>&#10003;</Text>
+          <Text style={styles.successTitle}>Session Created!</Text>
+          <Text style={styles.successText}>
+            Your session has been set up successfully.
+          </Text>
+          {sessionId && (
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => router.replace(`/session/${sessionId}`)}
+            >
+              <Text style={styles.primaryButtonText}>View Session</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.secondaryButtonText}>Back to Sessions</Text>
+          </TouchableOpacity>
         </View>
       )}
     </ScrollView>
@@ -189,6 +393,7 @@ const styles = StyleSheet.create({
   progress: { flexDirection: 'row', gap: 4, marginBottom: 24 },
   progressBar: { flex: 1, height: 4, borderRadius: 2 },
   heading: { fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
+  subtitle: { fontSize: 14, color: '#6b7280', marginBottom: 12 },
   label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 4, marginTop: 12 },
   typeCard: {
     backgroundColor: '#fff',
@@ -245,4 +450,81 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: { color: '#374151', fontSize: 16 },
   disabledButton: { opacity: 0.5 },
+
+  // Matching styles
+  matchLoadingContainer: { alignItems: 'center', paddingVertical: 40 },
+  matchLoadingText: { fontSize: 14, color: '#6b7280', marginTop: 12 },
+  noMatches: { alignItems: 'center', paddingVertical: 32 },
+  noMatchesTitle: { fontSize: 18, fontWeight: '600', marginBottom: 8 },
+  noMatchesText: { fontSize: 14, color: '#6b7280', textAlign: 'center' },
+  matchCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  matchHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  matchNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  matchAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#2563eb',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  matchAvatarOff: { backgroundColor: '#9ca3af' },
+  matchAvatarText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  matchName: { fontSize: 15, fontWeight: '600' },
+  matchType: { fontSize: 12, color: '#6b7280' },
+  scoreBadge: {
+    backgroundColor: '#eff6ff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  scoreText: { fontSize: 14, fontWeight: '700', color: '#2563eb' },
+  matchBio: { fontSize: 13, color: '#6b7280', marginTop: 8, lineHeight: 18 },
+  matchTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  matchTag: {
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  matchTagText: { fontSize: 11, color: '#4b5563' },
+  matchStats: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
+  matchStat: { fontSize: 12, color: '#6b7280' },
+  matchStatSep: { fontSize: 12, color: '#d1d5db', marginHorizontal: 6 },
+  breakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+  },
+  breakdownItem: { alignItems: 'center' },
+  breakdownLabel: { fontSize: 10, color: '#9ca3af' },
+  breakdownValue: { fontSize: 13, fontWeight: '600', color: '#374151' },
+  selectButton: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  selectButtonText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+
+  // Success styles
+  successContainer: { alignItems: 'center', paddingVertical: 40 },
+  successIcon: { fontSize: 48, color: '#22c55e', marginBottom: 16 },
+  successTitle: { fontSize: 22, fontWeight: '700', marginBottom: 8 },
+  successText: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 8 },
 });

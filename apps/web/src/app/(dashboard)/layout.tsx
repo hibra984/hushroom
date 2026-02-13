@@ -54,6 +54,9 @@ export default function DashboardLayout({
             <Link href="/sessions" className="text-sm text-gray-600 hover:text-gray-900">
               Sessions
             </Link>
+            <Link href="/companions" className="text-sm text-gray-600 hover:text-gray-900">
+              Companions
+            </Link>
             <Link href="/profile" className="text-sm text-gray-600 hover:text-gray-900">
               Profile
             </Link>

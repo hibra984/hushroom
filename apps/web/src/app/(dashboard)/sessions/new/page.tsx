@@ -10,25 +10,21 @@ const SESSION_TYPES = {
     label: 'Focus',
     description: 'Stay focused on a specific task with accountability and presence.',
     defaultDuration: 30,
-    icon: 'O',
   },
   DECISION: {
     label: 'Decision',
     description: 'Work through a decision with structured support and clear options.',
     defaultDuration: 45,
-    icon: 'D',
   },
   EMOTIONAL_UNLOAD: {
     label: 'Emotional Unload',
     description: 'Express and process emotions in a safe, structured, non-therapeutic setting.',
     defaultDuration: 30,
-    icon: 'E',
   },
   PLANNING: {
     label: 'Planning',
     description: 'Plan and organize with structured accountability and actionable outcomes.',
     defaultDuration: 60,
-    icon: 'P',
   },
 } as const;
 
@@ -41,6 +37,29 @@ interface ContractTemplate {
   sessionType: string;
   mode: string;
   rules: { type: string; description?: string }[];
+}
+
+interface MatchResult {
+  companionId: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  type: string;
+  bio: string | null;
+  baseRate: number;
+  expertiseTags: string[];
+  averageRating: number;
+  reputationScore: number;
+  totalSessions: number;
+  successRate: number;
+  isOnline: boolean;
+  languages: { language: string; proficiency: string }[];
+  score: number;
+  breakdown: {
+    goalMatch: number;
+    reputation: number;
+    fairDistribution: number;
+    priceFit: number;
+  };
 }
 
 export default function NewSessionPage() {
@@ -62,8 +81,11 @@ export default function NewSessionPage() {
   const [templates, setTemplates] = useState<ContractTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
-  // Step 4: Session ID after creation
+  // Step 4: Matching
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
+  const [selectedCompanion, setSelectedCompanion] = useState<string | null>(null);
+  const [matchingLoading, setMatchingLoading] = useState(false);
 
   const handleSelectType = (type: SessionTypeKey) => {
     setSessionType(type);
@@ -90,12 +112,12 @@ export default function NewSessionPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const goToStep4 = async () => {
     if (!sessionType) return;
     setIsLoading(true);
     setError('');
     try {
-      // Create session
+      // Create session, goal, contract
       const session = await apiClient.post<{ id: string }>('/sessions', {
         type: sessionType,
         plannedDuration,
@@ -103,7 +125,6 @@ export default function NewSessionPage() {
       const sid = session.id;
       setSessionId(sid);
 
-      // Create goal
       await apiClient.post('/goals', {
         sessionId: sid,
         title: goalTitle,
@@ -111,7 +132,6 @@ export default function NewSessionPage() {
         successCriteria: successCriteria.filter(Boolean),
       });
 
-      // Create contract
       const template = templates.find((t) => t.id === selectedTemplate);
       await apiClient.post('/contracts', {
         sessionId: sid,
@@ -119,12 +139,41 @@ export default function NewSessionPage() {
         mode: template?.mode || 'MODERATE',
       });
 
+      // Find matches
+      setMatchingLoading(true);
+      const matches = await apiClient.post<MatchResult[]>('/matching/find', {
+        sessionId: sid,
+      });
+      setMatchResults(matches);
+      setMatchingLoading(false);
+
       setStep(4);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to create session');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSelectCompanion = async () => {
+    if (!sessionId || !selectedCompanion) return;
+    setIsLoading(true);
+    setError('');
+    try {
+      await apiClient.post('/matching/select', {
+        sessionId,
+        companionId: selectedCompanion,
+      });
+      setStep(5);
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : 'Failed to select companion');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const skipMatching = () => {
+    setStep(5);
   };
 
   const addCriteria = () => setSuccessCriteria([...successCriteria, '']);
@@ -144,7 +193,7 @@ export default function NewSessionPage() {
 
       {/* Step indicators */}
       <div className="mb-8 flex gap-2">
-        {[1, 2, 3, 4].map((s) => (
+        {[1, 2, 3, 4, 5].map((s) => (
           <div
             key={s}
             className={`h-1.5 flex-1 rounded-full ${s <= step ? 'bg-blue-600' : 'bg-gray-200'}`}
@@ -336,35 +385,138 @@ export default function NewSessionPage() {
               Back
             </button>
             <button
-              onClick={handleSubmit}
+              onClick={goToStep4}
               disabled={isLoading}
               className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              {isLoading ? 'Creating...' : 'Create Session'}
+              {isLoading ? 'Creating...' : 'Next: Find Companion'}
             </button>
           </div>
         </div>
       )}
 
-      {/* Step 4: Success */}
-      {step === 4 && sessionId && (
+      {/* Step 4: Find companion */}
+      {step === 4 && (
+        <div>
+          <h2 className="mb-4 text-lg font-semibold">Choose a companion</h2>
+          <p className="mb-4 text-sm text-gray-500">
+            We found companions that match your session. Select one to proceed.
+          </p>
+
+          {matchingLoading ? (
+            <p className="text-sm text-gray-500">Finding companions...</p>
+          ) : matchResults.length === 0 ? (
+            <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
+              <p className="mb-4 text-sm text-gray-500">
+                No companions available right now. Your session has been created and will be matched automatically.
+              </p>
+              <button
+                onClick={skipMatching}
+                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                Continue
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-3">
+                {matchResults.map((match) => (
+                  <button
+                    key={match.companionId}
+                    onClick={() => setSelectedCompanion(match.companionId)}
+                    className={`w-full rounded-lg border p-4 text-left transition ${
+                      selectedCompanion === match.companionId
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold">
+                            {match.displayName || 'Companion'}
+                          </span>
+                          {match.isOnline && (
+                            <span className="h-2 w-2 rounded-full bg-green-500" />
+                          )}
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                            {match.type}
+                          </span>
+                        </div>
+                        {match.bio && (
+                          <p className="mt-1 text-xs text-gray-500 line-clamp-2">{match.bio}</p>
+                        )}
+                        {match.expertiseTags.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {match.expertiseTags.slice(0, 4).map((tag) => (
+                              <span
+                                key={tag}
+                                className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-blue-600">
+                          {Math.round(match.score * 100)}%
+                        </div>
+                        <div className="text-xs text-gray-400">match</div>
+                        <div className="mt-1 text-xs text-gray-500">
+                          {match.averageRating.toFixed(1)} rating
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {match.baseRate} EUR/session
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-6 flex justify-between">
+                <button
+                  onClick={skipMatching}
+                  className="rounded-md border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Skip (auto-match later)
+                </button>
+                <button
+                  onClick={handleSelectCompanion}
+                  disabled={!selectedCompanion || isLoading}
+                  className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {isLoading ? 'Selecting...' : 'Select Companion'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Step 5: Success */}
+      {step === 5 && sessionId && (
         <div className="text-center">
           <h2 className="mb-4 text-xl font-semibold text-green-700">Session Created</h2>
           <p className="mb-6 text-sm text-gray-600">
-            Your session has been created. It will be matched with a companion shortly.
+            {selectedCompanion
+              ? 'Your session has been created and matched with a companion.'
+              : 'Your session has been created. It will be matched with a companion shortly.'}
           </p>
           <div className="flex justify-center gap-4">
             <Link
-              href={`/sessions`}
+              href="/sessions"
               className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               View All Sessions
             </Link>
             <Link
-              href="/dashboard"
+              href={`/sessions/${sessionId}`}
               className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
             >
-              Back to Dashboard
+              View Session
             </Link>
           </div>
         </div>
