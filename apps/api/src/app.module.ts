@@ -15,6 +15,8 @@ import { MatchingModule } from './modules/matching/matching.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { RatingsModule } from './modules/ratings/ratings.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
+import { MediaModule } from './modules/media/media.module';
+import { DriftModule } from './modules/drift/drift.module';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { AvailabilityModule } from './modules/availability/availability.module';
     PaymentsModule,
     RatingsModule,
     AvailabilityModule,
+    MediaModule,
+    DriftModule,
   ],
 })
 export class AppModule {}
