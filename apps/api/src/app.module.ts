@@ -19,6 +19,7 @@ import { AvailabilityModule } from './modules/availability/availability.module';
 import { MediaModule } from './modules/media/media.module';
 import { DriftModule } from './modules/drift/drift.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { EmailModule } from './common/email/email.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { AdminModule } from './modules/admin/admin.module';
     MediaModule,
     DriftModule,
     AdminModule,
+    EmailModule,
   ],
   providers: [
     {

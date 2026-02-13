@@ -1,10 +1,11 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   transpilePackages: [
-    "@hushroom/shared-types",
-    "@hushroom/shared-validators",
-    "@hushroom/shared-constants",
+    '@hushroom/shared-types',
+    '@hushroom/shared-validators',
+    '@hushroom/shared-constants',
   ],
 };
 
