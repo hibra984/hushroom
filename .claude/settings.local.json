@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx nest build:*)",
+      "Bash(npx next build:*)",
+      "Bash(node -e:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git push:*)",
+      "Bash(npx jest --config test/jest-e2e.json --listTests)"
+    ]
+  }
+}
