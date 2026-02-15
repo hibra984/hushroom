@@ -141,7 +141,7 @@ export class AbuseReportsController {
 
   @Post()
   async createReport(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser('id') userId: string,
     @Body() dto: CreateAbuseReportDto,
   ) {
     return this.adminService.createAbuseReport(userId, dto);

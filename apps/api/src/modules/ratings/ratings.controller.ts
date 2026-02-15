@@ -19,7 +19,7 @@ export class RatingsController {
 
   @Post()
   async createRating(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser('id') userId: string,
     @Body() dto: CreateRatingDto,
   ) {
     return this.ratingsService.createRating(userId, dto);
@@ -44,7 +44,7 @@ export class RatingsController {
   }
 
   @Get('me')
-  async getMyRatings(@CurrentUser('sub') userId: string) {
+  async getMyRatings(@CurrentUser('id') userId: string) {
     return this.ratingsService.getMyRatings(userId);
   }
 }
