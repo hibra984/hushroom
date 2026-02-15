@@ -14,6 +14,30 @@ import { SearchCompanionsDto } from './dto/search-companions.dto';
 export class CompanionsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private decimalToNumber(value: Prisma.Decimal | number | string | null): number | null {
+    if (value === null) return null;
+    return Number(value);
+  }
+
+  private withNumericMetrics<
+    T extends {
+      baseRate: Prisma.Decimal | number | string;
+      expertPremium: Prisma.Decimal | number | string | null;
+      successRate: Prisma.Decimal | number | string;
+      averageRating: Prisma.Decimal | number | string;
+      reputationScore: Prisma.Decimal | number | string;
+    },
+  >(profile: T) {
+    return {
+      ...profile,
+      baseRate: Number(profile.baseRate),
+      expertPremium: this.decimalToNumber(profile.expertPremium),
+      successRate: Number(profile.successRate),
+      averageRating: Number(profile.averageRating),
+      reputationScore: Number(profile.reputationScore),
+    };
+  }
+
   async register(userId: string, dto: RegisterCompanionDto) {
     const existing = await this.prisma.companionProfile.findUnique({
       where: { userId },
@@ -49,7 +73,7 @@ export class CompanionsService {
       }),
     ]);
 
-    return companionProfile;
+    return this.withNumericMetrics(companionProfile);
   }
 
   async getOwnProfile(userId: string) {
@@ -79,7 +103,7 @@ export class CompanionsService {
       throw new NotFoundException('Companion profile not found');
     }
 
-    return profile;
+    return this.withNumericMetrics(profile);
   }
 
   async updateProfile(userId: string, dto: UpdateCompanionDto) {
@@ -91,7 +115,7 @@ export class CompanionsService {
       throw new NotFoundException('Companion profile not found');
     }
 
-    return this.prisma.companionProfile.update({
+    const updated = await this.prisma.companionProfile.update({
       where: { userId },
       data: {
         bio: dto.bio,
@@ -110,6 +134,8 @@ export class CompanionsService {
         },
       },
     });
+
+    return this.withNumericMetrics(updated);
   }
 
   async getPublicProfile(companionId: string) {
@@ -150,7 +176,7 @@ export class CompanionsService {
     const { user, ...rest } = profile;
 
     return {
-      ...rest,
+      ...this.withNumericMetrics(rest),
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
       languages: user.languagePreferences,
@@ -230,7 +256,7 @@ export class CompanionsService {
     ]);
 
     const companions = data.map(({ user, ...rest }) => ({
-      ...rest,
+      ...this.withNumericMetrics(rest),
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
       languages: user.languagePreferences,

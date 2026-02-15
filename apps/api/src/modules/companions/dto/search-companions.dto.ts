@@ -8,7 +8,7 @@ import {
   Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CompanionType } from '@hushroom/shared-types';
+import { CompanionType } from '@prisma/client';
 
 export class SearchCompanionsDto {
   @IsOptional()

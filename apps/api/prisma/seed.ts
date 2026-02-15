@@ -314,6 +314,7 @@ async function main() {
       userId: sarah.id,
       amount: 25.00,
       currency: 'EUR',
+      commissionRate: 0.25,
       platformFee: 6.25,
       companionPayout: 18.75,
       status: 'CAPTURED',

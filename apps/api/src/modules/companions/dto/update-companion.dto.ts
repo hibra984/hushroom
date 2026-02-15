@@ -9,7 +9,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
-import { ContractMode } from '@hushroom/shared-types';
+import { ContractMode } from '@prisma/client';
 
 export class UpdateCompanionDto {
   @IsOptional()
