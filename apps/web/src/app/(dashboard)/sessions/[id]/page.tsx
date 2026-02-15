@@ -104,7 +104,7 @@ export default function SessionDetailPage() {
   if (isLoading) {
     return (
       <div className="py-8 text-center">
-        <p className="text-sm text-gray-500">Loading session...</p>
+        <p className="text-sm text-[var(--ink-soft)]">Loading session...</p>
       </div>
     );
   }
@@ -113,7 +113,7 @@ export default function SessionDetailPage() {
     return (
       <div className="py-8 text-center">
         <p className="mb-4 text-sm text-red-600">{error || 'Session not found'}</p>
-        <Link href="/sessions" className="text-sm text-blue-600 hover:underline">
+        <Link href="/sessions" className="text-sm font-semibold text-[#0f7a5b] hover:text-[#0a6047]">
           Back to Sessions
         </Link>
       </div>
@@ -127,23 +127,23 @@ export default function SessionDetailPage() {
   const canEnd = ['IN_PROGRESS', 'PAUSED'].includes(session.status);
 
   return (
-    <div className="mx-auto max-w-2xl py-8">
-      <Link href="/sessions" className="mb-4 inline-block text-sm text-blue-600 hover:underline">
-        &larr; Back to Sessions
+    <div className="mx-auto max-w-3xl py-4 sm:py-6">
+      <Link href="/sessions" className="mb-4 inline-block text-sm font-semibold text-[#0f7a5b] hover:text-[#0a6047]">
+        {'<-'} Back to Sessions
       </Link>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="surface-card rounded-3xl p-6 sm:p-7">
         <div className="mb-4 flex items-start justify-between">
           <div>
             <h1 className="text-xl font-bold">
               {TYPE_LABELS[session.type] || session.type} Session
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-[var(--ink-soft)]">
               Created {new Date(session.createdAt).toLocaleString()}
             </p>
           </div>
           <span
-            className={`rounded-full px-3 py-1 text-xs font-medium ${
+            className={`rounded-full px-3 py-1 text-xs font-semibold ${
               STATUS_COLORS[session.status] || 'bg-gray-100 text-gray-600'
             }`}
           >
@@ -152,54 +152,53 @@ export default function SessionDetailPage() {
         </div>
 
         {error && (
-          <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
         )}
 
-        <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
+        <div className="mb-6 grid grid-cols-2 gap-3 text-sm">
           <div>
-            <span className="text-gray-500">Planned Duration</span>
+            <span className="text-[var(--ink-soft)]">Planned Duration</span>
             <p className="font-medium">{session.plannedDuration} min</p>
           </div>
           {session.durationMinutes && (
             <div>
-              <span className="text-gray-500">Actual Duration</span>
+              <span className="text-[var(--ink-soft)]">Actual Duration</span>
               <p className="font-medium">{session.durationMinutes} min</p>
             </div>
           )}
           {session.startedAt && (
             <div>
-              <span className="text-gray-500">Started</span>
+              <span className="text-[var(--ink-soft)]">Started</span>
               <p className="font-medium">{new Date(session.startedAt).toLocaleString()}</p>
             </div>
           )}
           {session.endedAt && (
             <div>
-              <span className="text-gray-500">Ended</span>
+              <span className="text-[var(--ink-soft)]">Ended</span>
               <p className="font-medium">{new Date(session.endedAt).toLocaleString()}</p>
             </div>
           )}
         </div>
 
         {session.cancellationReason && (
-          <div className="mb-6 rounded-md bg-red-50 p-3">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-3">
             <span className="text-xs font-medium text-red-700">Cancellation Reason</span>
             <p className="text-sm text-red-600">{session.cancellationReason}</p>
           </div>
         )}
 
-        {/* Goal */}
         {session.goal && (
-          <div className="mb-6 rounded-lg bg-gray-50 p-4">
-            <h3 className="mb-2 text-sm font-semibold text-gray-700">Goal</h3>
+          <div className="mb-6 rounded-2xl bg-[#f2f8f4] p-4">
+            <h3 className="mb-2 text-sm font-semibold text-[#355145]">Goal</h3>
             <p className="font-medium">{session.goal.title}</p>
-            <p className="mt-1 text-sm text-gray-600">{session.goal.description}</p>
+            <p className="mt-1 text-sm text-[var(--ink-soft)]">{session.goal.description}</p>
             {session.goal.successCriteria.length > 0 && (
               <div className="mt-3">
-                <span className="text-xs font-medium text-gray-500">Success Criteria</span>
+                <span className="text-xs font-medium text-[var(--ink-soft)]">Success Criteria</span>
                 <ul className="mt-1 space-y-1">
                   {session.goal.successCriteria.map((c, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="text-gray-300">&bull;</span>
+                    <li key={i} className="flex items-center gap-2 text-sm text-[var(--ink-soft)]">
+                      <span className="text-[#9eb6a8]">&bull;</span>
                       {c}
                     </li>
                   ))}
@@ -209,15 +208,14 @@ export default function SessionDetailPage() {
           </div>
         )}
 
-        {/* Contract */}
         {session.contract && (
-          <div className="mb-6 rounded-lg bg-gray-50 p-4">
-            <h3 className="mb-2 text-sm font-semibold text-gray-700">Contract</h3>
+          <div className="mb-6 rounded-2xl bg-[#f2f8f4] p-4">
+            <h3 className="mb-2 text-sm font-semibold text-[#355145]">Contract</h3>
             <div className="mb-2 flex items-center gap-2">
-              <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700">
+              <span className="rounded-full bg-[#dde7e0] px-2 py-0.5 text-xs font-semibold text-[#355145]">
                 {session.contract.mode}
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-[var(--ink-soft)]">
                 User: {session.contract.acceptedByUser ? 'Accepted' : 'Pending'} |
                 Companion: {session.contract.acceptedByCompanion ? 'Accepted' : 'Pending'}
               </span>
@@ -227,7 +225,7 @@ export default function SessionDetailPage() {
                 {session.contract.rules.map((r, i) => (
                   <span
                     key={i}
-                    className="rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-600"
+                    className="rounded bg-[#dde7e0] px-1.5 py-0.5 text-xs text-[#4c6258]"
                   >
                     {r.description || r.type}
                   </span>
@@ -237,13 +235,12 @@ export default function SessionDetailPage() {
           </div>
         )}
 
-        {/* Actions */}
         <div className="flex flex-wrap gap-2">
           {canStart && (
             <button
               onClick={() => handleAction('start')}
               disabled={actionLoading}
-              className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+              className="btn-primary rounded-xl px-4 py-2 text-sm disabled:opacity-50"
             >
               Start Session
             </button>
@@ -252,7 +249,7 @@ export default function SessionDetailPage() {
             <button
               onClick={() => handleAction('pause')}
               disabled={actionLoading}
-              className="rounded-md bg-yellow-600 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-700 disabled:opacity-50"
+              className="rounded-xl bg-[#E5A22A] px-4 py-2 text-sm font-semibold text-[#2d2615] hover:bg-[#d8961f] disabled:opacity-50"
             >
               Pause
             </button>
@@ -261,7 +258,7 @@ export default function SessionDetailPage() {
             <button
               onClick={() => handleAction('resume')}
               disabled={actionLoading}
-              className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+              className="btn-primary rounded-xl px-4 py-2 text-sm disabled:opacity-50"
             >
               Resume
             </button>
@@ -270,7 +267,7 @@ export default function SessionDetailPage() {
             <button
               onClick={() => handleAction('end')}
               disabled={actionLoading}
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="btn-primary rounded-xl px-4 py-2 text-sm disabled:opacity-50"
             >
               End Session
             </button>
@@ -279,7 +276,7 @@ export default function SessionDetailPage() {
             <button
               onClick={handleCancel}
               disabled={actionLoading}
-              className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+              className="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
             >
               Cancel
             </button>

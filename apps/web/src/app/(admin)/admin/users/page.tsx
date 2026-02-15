@@ -42,61 +42,121 @@ export default function AdminUsersPage() {
     fetchUsers();
   };
 
+  const roleStyles: Record<string, string> = {
+    ADMIN: 'bg-[#ffe9e7] text-[#a03a2a]',
+    COMPANION: 'bg-[#dff6ed] text-[#0f7054]',
+    USER: 'bg-[#edf3ef] text-[#556b61]',
+  };
+
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold">Users ({total})</h1>
-      <input
-        type="text"
-        placeholder="Search by email or name..."
-        value={search}
-        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-        className="mb-4 w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-white"
-      />
+    <div className="py-2 sm:py-4">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">Users</h1>
+          <p className="mt-1 text-sm text-[var(--ink-soft)]">{total} account(s) across the platform.</p>
+        </div>
+      </div>
+
+      <div className="glass-shell mb-5 rounded-2xl p-4">
+        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--ink-soft)]">
+          Search
+        </label>
+        <input
+          type="text"
+          placeholder="Search by email or name..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          className="input-field text-sm"
+        />
+      </div>
+
       {loading ? (
-        <p className="text-gray-400">Loading...</p>
+        <p className="text-sm text-[var(--ink-soft)]">Loading users...</p>
       ) : (
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-700 text-gray-400">
-            <tr>
-              <th className="py-2">Email</th>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Verified</th>
-              <th>Active</th>
-              <th>Joined</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id} className="border-b border-gray-800">
-                <td className="py-2">{u.email}</td>
-                <td>{u.displayName || u.firstName || '\u2014'}</td>
-                <td>
-                  <span className={`rounded px-2 py-0.5 text-xs ${u.role === 'ADMIN' ? 'bg-red-800' : u.role === 'COMPANION' ? 'bg-green-800' : 'bg-gray-700'}`}>
-                    {u.role}
-                  </span>
-                </td>
-                <td>{u.isEmailVerified ? 'Yes' : 'No'}</td>
-                <td>{u.isActive ? 'Yes' : 'No'}</td>
-                <td>{new Date(u.createdAt).toLocaleDateString()}</td>
-                <td>
-                  <button
-                    onClick={() => toggleActive(u.id, u.isActive)}
-                    className={`rounded px-2 py-1 text-xs ${u.isActive ? 'bg-red-700 hover:bg-red-600' : 'bg-green-700 hover:bg-green-600'}`}
-                  >
-                    {u.isActive ? 'Deactivate' : 'Activate'}
-                  </button>
-                </td>
+        <div className="surface-card overflow-x-auto rounded-2xl">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-[#d9e5dc] bg-[#f3f8f4] text-[var(--ink-soft)]">
+              <tr>
+                <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Verified</th>
+                <th className="px-4 py-3">Active</th>
+                <th className="px-4 py-3">Joined</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id} className="border-b border-[#e2ece4] last:border-b-0 hover:bg-[#f8fcf9]">
+                  <td className="px-4 py-3">{u.email}</td>
+                  <td className="px-4 py-3">{u.displayName || u.firstName || '-'}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        roleStyles[u.role] || roleStyles.USER
+                      }`}
+                    >
+                      {u.role}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        u.isEmailVerified ? 'bg-[#dff6ed] text-[#0f7054]' : 'bg-[#fff4dd] text-[#8c6421]'
+                      }`}
+                    >
+                      {u.isEmailVerified ? 'Yes' : 'No'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        u.isActive ? 'bg-[#dff6ed] text-[#0f7054]' : 'bg-[#ffe9e7] text-[#a03a2a]'
+                      }`}
+                    >
+                      {u.isActive ? 'Yes' : 'No'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">{new Date(u.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => toggleActive(u.id, u.isActive)}
+                      className={`rounded-lg px-3 py-1 text-xs font-semibold ${
+                        u.isActive
+                          ? 'border border-red-200 text-red-600 hover:bg-red-50'
+                          : 'bg-[#0f7e5f] text-white hover:bg-[#0d6d52]'
+                      }`}
+                    >
+                      {u.isActive ? 'Deactivate' : 'Activate'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-      <div className="mt-4 flex gap-2">
-        <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="rounded bg-gray-700 px-3 py-1 text-sm disabled:opacity-50">Prev</button>
-        <span className="px-2 py-1 text-sm text-gray-400">Page {page}</span>
-        <button onClick={() => setPage(page + 1)} disabled={users.length < 20} className="rounded bg-gray-700 px-3 py-1 text-sm disabled:opacity-50">Next</button>
+
+      <div className="mt-4 flex items-center gap-2">
+        <button
+          onClick={() => setPage(Math.max(1, page - 1))}
+          disabled={page === 1}
+          className="btn-secondary rounded-lg px-3 py-1.5 text-sm disabled:opacity-50"
+        >
+          Prev
+        </button>
+        <span className="px-2 py-1 text-sm text-[var(--ink-soft)]">Page {page}</span>
+        <button
+          onClick={() => setPage(page + 1)}
+          disabled={users.length < 20}
+          className="btn-secondary rounded-lg px-3 py-1.5 text-sm disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   );

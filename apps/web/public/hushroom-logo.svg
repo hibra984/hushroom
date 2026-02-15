@@ -1,0 +1,37 @@
+<svg width="560" height="180" viewBox="0 0 560 180" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Hushroom logo</title>
+  <desc id="desc">A friendly cartoon mushroom icon with warm focus accents, representing structured human presence.</desc>
+  <defs>
+    <linearGradient id="cap" x1="40" y1="28" x2="164" y2="124" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#18A57A"/>
+      <stop offset="1" stop-color="#0D7356"/>
+    </linearGradient>
+    <linearGradient id="stem" x1="81" y1="86" x2="126" y2="157" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7E9"/>
+      <stop offset="1" stop-color="#F0E4CB"/>
+    </linearGradient>
+    <linearGradient id="halo" x1="69" y1="18" x2="136" y2="91" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE3A4"/>
+      <stop offset="1" stop-color="#E8AA35"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(16 10)">
+    <ellipse cx="102" cy="146" rx="56" ry="12" fill="#D3E2D8"/>
+    <path d="M33 86C37 49 62 24 102 24C142 24 168 49 171 86C172 99 162 108 149 108H55C42 108 31 99 33 86Z" fill="url(#cap)"/>
+    <path d="M62 104H142V124C142 145 125 162 104 162H100C79 162 62 145 62 124V104Z" fill="url(#stem)"/>
+    <circle cx="78" cy="64" r="8" fill="#DBFFF2" opacity="0.95"/>
+    <circle cx="117" cy="52" r="10" fill="#DBFFF2" opacity="0.9"/>
+    <circle cx="138" cy="74" r="7" fill="#DBFFF2" opacity="0.88"/>
+    <path d="M86 123C89.8 129.2 93.8 132.2 100.4 132.2C107 132.2 111.2 129.2 115 123" stroke="#31584B" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="88.5" cy="112.5" r="3.5" fill="#31584B"/>
+    <circle cx="112.5" cy="112.5" r="3.5" fill="#31584B"/>
+    <path d="M66 88C74 98 84 102 99 102C114 102 124 98 133 88" stroke="#0B5E46" stroke-width="3" stroke-linecap="round" stroke-opacity="0.65"/>
+    <path d="M57 49C70 33 83 25 103 21C122 25 136 33 148 49" stroke="url(#halo)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g fill="#112D22">
+    <text x="206" y="92" font-family="'Space Grotesk', 'Segoe UI', sans-serif" font-size="58" font-weight="700" letter-spacing="-0.02em">Hushroom</text>
+    <text x="210" y="124" font-family="'Manrope', 'Segoe UI', sans-serif" font-size="20" font-weight="500" letter-spacing="0.08em" fill="#4A665A">STRUCTURED HUMAN PRESENCE</text>
+  </g>
+</svg>

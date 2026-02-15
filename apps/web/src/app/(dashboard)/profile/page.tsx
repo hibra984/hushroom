@@ -37,23 +37,26 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="py-8">
-      <h1 className="mb-6 text-2xl font-bold">Profile</h1>
+    <div className="py-2 sm:py-4">
+      <h1 className="mb-2 text-3xl font-bold">Profile</h1>
+      <p className="mb-6 text-sm text-[var(--ink-soft)]">
+        Manage identity details, language preference, and verification status.
+      </p>
 
       {message && (
-        <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">{message}</div>
+        <div className="mb-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700">{message}</div>
       )}
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
       )}
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="surface-card rounded-3xl p-6">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Personal Information</h2>
           {!isEditing ? (
             <button
               onClick={() => setIsEditing(true)}
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm font-semibold text-[#0f7a5b] hover:text-[#0a6047]"
             >
               Edit
             </button>
@@ -61,14 +64,14 @@ export default function ProfilePage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setIsEditing(false)}
-                className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-gray-50"
+                className="btn-secondary rounded-xl px-3 py-1 text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="rounded-md bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+                className="btn-primary rounded-xl px-3 py-1 text-sm disabled:opacity-50"
               >
                 {isSaving ? 'Saving...' : 'Save'}
               </button>
@@ -78,60 +81,60 @@ export default function ProfilePage() {
 
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-500">Email</label>
+            <label className="mb-1 block text-sm font-semibold text-[var(--ink-soft)]">Email</label>
             <p className="text-sm">{user?.email}</p>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-500">Role</label>
+            <label className="mb-1 block text-sm font-semibold text-[var(--ink-soft)]">Role</label>
             <p className="text-sm capitalize">{user?.role?.toLowerCase()}</p>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-500">First Name</label>
+            <label className="mb-1 block text-sm font-semibold text-[var(--ink-soft)]">First Name</label>
             {isEditing ? (
               <input
                 name="firstName"
                 value={form.firstName}
                 onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="input-field text-sm"
               />
             ) : (
               <p className="text-sm">{user?.firstName || '-'}</p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-500">Last Name</label>
+            <label className="mb-1 block text-sm font-semibold text-[var(--ink-soft)]">Last Name</label>
             {isEditing ? (
               <input
                 name="lastName"
                 value={form.lastName}
                 onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="input-field text-sm"
               />
             ) : (
               <p className="text-sm">{user?.lastName || '-'}</p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-500">Display Name</label>
+            <label className="mb-1 block text-sm font-semibold text-[var(--ink-soft)]">Display Name</label>
             {isEditing ? (
               <input
                 name="displayName"
                 value={form.displayName}
                 onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="input-field text-sm"
               />
             ) : (
               <p className="text-sm">{user?.displayName || '-'}</p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-500">Language</label>
+            <label className="mb-1 block text-sm font-semibold text-[var(--ink-soft)]">Language</label>
             {isEditing ? (
               <select
                 name="preferredLanguage"
                 value={form.preferredLanguage}
                 onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="input-field text-sm"
               >
                 <option value="en">English</option>
                 <option value="fr">French</option>
@@ -143,8 +146,8 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="mt-6 border-t border-gray-200 pt-6">
-          <h3 className="mb-2 text-sm font-semibold text-gray-500">Verification Status</h3>
+        <div className="mt-6 border-t border-[#d8e4db] pt-6">
+          <h3 className="mb-2 text-sm font-semibold text-[var(--ink-soft)]">Verification Status</h3>
           <div className="flex gap-4">
             <span
               className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${

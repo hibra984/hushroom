@@ -188,21 +188,24 @@ export default function NewSessionPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl py-8">
-      <h1 className="mb-2 text-2xl font-bold">Book a New Session</h1>
+    <div className="mx-auto max-w-3xl py-4 sm:py-6">
+      <h1 className="mb-2 text-3xl font-bold">Book a New Session</h1>
+      <p className="mb-6 text-sm text-[var(--ink-soft)]">
+        Build the session in steps, then choose the best companion match.
+      </p>
 
       {/* Step indicators */}
       <div className="mb-8 flex gap-2">
         {[1, 2, 3, 4, 5].map((s) => (
           <div
             key={s}
-            className={`h-1.5 flex-1 rounded-full ${s <= step ? 'bg-blue-600' : 'bg-gray-200'}`}
+            className={`h-1.5 flex-1 rounded-full ${s <= step ? 'bg-[#0f7e5f]' : 'bg-[#d7e4db]'}`}
           />
         ))}
       </div>
 
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
       )}
 
       {/* Step 1: Choose type */}
@@ -216,15 +219,15 @@ export default function NewSessionPage() {
                 <button
                   key={key}
                   onClick={() => handleSelectType(key)}
-                  className={`rounded-lg border p-4 text-left transition ${
+                  className={`rounded-2xl border p-4 text-left transition ${
                     sessionType === key
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-[#42a889] bg-[#ecf9f3]'
+                      : 'border-[#d4e2d9] bg-white hover:border-[#b9cec2]'
                   }`}
                 >
                   <div className="mb-1 text-sm font-semibold">{t.label}</div>
-                  <div className="text-xs text-gray-500">{t.description}</div>
-                  <div className="mt-2 text-xs text-gray-400">{t.defaultDuration} min default</div>
+                  <div className="text-xs text-[var(--ink-soft)]">{t.description}</div>
+                  <div className="mt-2 text-xs text-[var(--ink-soft)]">{t.defaultDuration} min default</div>
                 </button>
               );
             })}
@@ -232,7 +235,7 @@ export default function NewSessionPage() {
 
           {sessionType && (
             <div className="mt-4">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-semibold text-[#325145]">
                 Duration (minutes)
               </label>
               <input
@@ -241,7 +244,7 @@ export default function NewSessionPage() {
                 max={120}
                 value={plannedDuration}
                 onChange={(e) => setPlannedDuration(Number(e.target.value))}
-                className="w-32 rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className="input-field w-32 text-sm"
               />
             </div>
           )}
@@ -250,7 +253,7 @@ export default function NewSessionPage() {
             <button
               onClick={goToStep2}
               disabled={!sessionType}
-              className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="btn-primary rounded-xl px-6 py-2 text-sm disabled:opacity-50"
             >
               Next: Define Goal
             </button>
@@ -265,28 +268,28 @@ export default function NewSessionPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Goal Title</label>
+              <label className="mb-1 block text-sm font-semibold text-[#325145]">Goal Title</label>
               <input
                 value={goalTitle}
                 onChange={(e) => setGoalTitle(e.target.value)}
                 placeholder="e.g., Finish quarterly report draft"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className="input-field text-sm"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
+              <label className="mb-1 block text-sm font-semibold text-[#325145]">Description</label>
               <textarea
                 value={goalDescription}
                 onChange={(e) => setGoalDescription(e.target.value)}
                 placeholder="Describe what you want to accomplish..."
                 rows={3}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className="input-field text-sm"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-semibold text-[#325145]">
                 Success Criteria
               </label>
               {successCriteria.map((c, i) => (
@@ -295,12 +298,12 @@ export default function NewSessionPage() {
                     value={c}
                     onChange={(e) => updateCriteria(i, e.target.value)}
                     placeholder={`Criterion ${i + 1}`}
-                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    className="input-field flex-1 text-sm"
                   />
                   {successCriteria.length > 1 && (
                     <button
                       onClick={() => removeCriteria(i)}
-                      className="text-sm text-red-500 hover:text-red-700"
+                      className="text-sm font-semibold text-red-500 hover:text-red-700"
                     >
                       Remove
                     </button>
@@ -309,7 +312,7 @@ export default function NewSessionPage() {
               ))}
               <button
                 onClick={addCriteria}
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm font-semibold text-[#0f7a5b] hover:text-[#0a6047]"
               >
                 + Add criterion
               </button>
@@ -319,14 +322,14 @@ export default function NewSessionPage() {
           <div className="mt-6 flex justify-between">
             <button
               onClick={() => setStep(1)}
-              className="rounded-md border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="btn-secondary rounded-xl px-6 py-2 text-sm"
             >
               Back
             </button>
             <button
               onClick={goToStep3}
               disabled={!goalTitle || !goalDescription || !successCriteria.filter(Boolean).length}
-              className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="btn-primary rounded-xl px-6 py-2 text-sm disabled:opacity-50"
             >
               Next: Choose Contract
             </button>
@@ -338,7 +341,7 @@ export default function NewSessionPage() {
       {step === 3 && (
         <div>
           <h2 className="mb-4 text-lg font-semibold">Choose a behavioral contract</h2>
-          <p className="mb-4 text-sm text-gray-500">
+          <p className="mb-4 text-sm text-[var(--ink-soft)]">
             Contracts define the rules of engagement for your session.
           </p>
 
@@ -347,24 +350,24 @@ export default function NewSessionPage() {
               <button
                 key={t.id}
                 onClick={() => setSelectedTemplate(t.id)}
-                className={`w-full rounded-lg border p-4 text-left transition ${
+                className={`w-full rounded-2xl border p-4 text-left transition ${
                   selectedTemplate === t.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-[#42a889] bg-[#ecf9f3]'
+                    : 'border-[#d4e2d9] bg-white hover:border-[#b9cec2]'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold">{t.name}</span>
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                  <span className="rounded-full bg-[#edf3ff] px-2 py-0.5 text-xs text-[#35557d]">
                     {t.mode}
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">{t.description}</p>
+                <p className="mt-1 text-xs text-[var(--ink-soft)]">{t.description}</p>
                 <div className="mt-2 flex flex-wrap gap-1">
                   {t.rules.map((r, i) => (
                     <span
                       key={i}
-                      className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600"
+                      className="rounded bg-[#edf5f0] px-1.5 py-0.5 text-xs text-[#4f675b]"
                     >
                       {r.description || r.type}
                     </span>
@@ -373,21 +376,21 @@ export default function NewSessionPage() {
               </button>
             ))}
             {templates.length === 0 && (
-              <p className="text-sm text-gray-400">No templates available. A default contract will be used.</p>
+              <p className="text-sm text-[var(--ink-soft)]">No templates available. A default contract will be used.</p>
             )}
           </div>
 
           <div className="mt-6 flex justify-between">
             <button
               onClick={() => setStep(2)}
-              className="rounded-md border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="btn-secondary rounded-xl px-6 py-2 text-sm"
             >
               Back
             </button>
             <button
               onClick={goToStep4}
               disabled={isLoading}
-              className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="btn-primary rounded-xl px-6 py-2 text-sm disabled:opacity-50"
             >
               {isLoading ? 'Creating...' : 'Next: Find Companion'}
             </button>
@@ -399,20 +402,20 @@ export default function NewSessionPage() {
       {step === 4 && (
         <div>
           <h2 className="mb-4 text-lg font-semibold">Choose a companion</h2>
-          <p className="mb-4 text-sm text-gray-500">
+          <p className="mb-4 text-sm text-[var(--ink-soft)]">
             We found companions that match your session. Select one to proceed.
           </p>
 
           {matchingLoading ? (
-            <p className="text-sm text-gray-500">Finding companions...</p>
+            <p className="text-sm text-[var(--ink-soft)]">Finding companions...</p>
           ) : matchResults.length === 0 ? (
-            <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
-              <p className="mb-4 text-sm text-gray-500">
+            <div className="surface-card rounded-2xl p-6 text-center">
+              <p className="mb-4 text-sm text-[var(--ink-soft)]">
                 No companions available right now. Your session has been created and will be matched automatically.
               </p>
               <button
                 onClick={skipMatching}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="btn-primary rounded-xl px-4 py-2 text-sm"
               >
                 Continue
               </button>
@@ -424,10 +427,10 @@ export default function NewSessionPage() {
                   <button
                     key={match.companionId}
                     onClick={() => setSelectedCompanion(match.companionId)}
-                    className={`w-full rounded-lg border p-4 text-left transition ${
+                    className={`w-full rounded-2xl border p-4 text-left transition ${
                       selectedCompanion === match.companionId
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-[#42a889] bg-[#ecf9f3]'
+                        : 'border-[#d4e2d9] bg-white hover:border-[#b9cec2]'
                     }`}
                   >
                     <div className="flex items-start justify-between">
@@ -439,19 +442,19 @@ export default function NewSessionPage() {
                           {match.isOnline && (
                             <span className="h-2 w-2 rounded-full bg-green-500" />
                           )}
-                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                          <span className="rounded-full bg-[#edf3ff] px-2 py-0.5 text-xs text-[#35557d]">
                             {match.type}
                           </span>
                         </div>
                         {match.bio && (
-                          <p className="mt-1 text-xs text-gray-500 line-clamp-2">{match.bio}</p>
+                          <p className="mt-1 line-clamp-2 text-xs text-[var(--ink-soft)]">{match.bio}</p>
                         )}
                         {match.expertiseTags.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1">
                             {match.expertiseTags.slice(0, 4).map((tag) => (
                               <span
                                 key={tag}
-                                className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600"
+                                className="rounded bg-[#edf5f0] px-1.5 py-0.5 text-xs text-[#4f675b]"
                               >
                                 {tag}
                               </span>
@@ -464,10 +467,10 @@ export default function NewSessionPage() {
                           {Math.round(match.score * 100)}%
                         </div>
                         <div className="text-xs text-gray-400">match</div>
-                        <div className="mt-1 text-xs text-gray-500">
+                        <div className="mt-1 text-xs text-[var(--ink-soft)]">
                           {match.averageRating.toFixed(1)} rating
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-[var(--ink-soft)]">
                           {match.baseRate} EUR/session
                         </div>
                       </div>
@@ -479,14 +482,14 @@ export default function NewSessionPage() {
               <div className="mt-6 flex justify-between">
                 <button
                   onClick={skipMatching}
-                  className="rounded-md border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="btn-secondary rounded-xl px-6 py-2 text-sm"
                 >
                   Skip (auto-match later)
                 </button>
                 <button
                   onClick={handleSelectCompanion}
                   disabled={!selectedCompanion || isLoading}
-                  className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="btn-primary rounded-xl px-6 py-2 text-sm disabled:opacity-50"
                 >
                   {isLoading ? 'Selecting...' : 'Select Companion'}
                 </button>
@@ -499,8 +502,8 @@ export default function NewSessionPage() {
       {/* Step 5: Success */}
       {step === 5 && sessionId && (
         <div className="text-center">
-          <h2 className="mb-4 text-xl font-semibold text-green-700">Session Created</h2>
-          <p className="mb-6 text-sm text-gray-600">
+          <h2 className="mb-4 text-xl font-semibold text-[#0f7a5b]">Session Created</h2>
+          <p className="mb-6 text-sm text-[var(--ink-soft)]">
             {selectedCompanion
               ? 'Your session has been created and matched with a companion.'
               : 'Your session has been created. It will be matched with a companion shortly.'}
@@ -508,13 +511,13 @@ export default function NewSessionPage() {
           <div className="flex justify-center gap-4">
             <Link
               href="/sessions"
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="btn-secondary rounded-xl px-4 py-2 text-sm"
             >
               View All Sessions
             </Link>
             <Link
               href={`/sessions/${sessionId}`}
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="btn-primary rounded-xl px-4 py-2 text-sm"
             >
               View Session
             </Link>

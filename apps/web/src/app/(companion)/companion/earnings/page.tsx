@@ -55,49 +55,52 @@ export default function EarningsPage() {
   };
 
   if (isLoading) {
-    return <div className="p-8 text-center text-gray-500">Loading...</div>;
+    return <div className="p-8 text-center text-[var(--ink-soft)]">Loading...</div>;
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Earnings</h1>
+    <div className="mx-auto max-w-5xl p-2 sm:p-4">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">Earnings</h1>
+          <p className="mt-1 text-sm text-[var(--ink-soft)]">
+            Understand your payout flow and recent transaction performance.
+          </p>
+        </div>
         <button
           onClick={handleOnboard}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="btn-primary rounded-xl px-4 py-2 text-sm"
         >
           Stripe Setup
         </button>
       </div>
 
-      {/* Summary Cards */}
       <div className="mb-8 grid grid-cols-3 gap-4">
-        <div className="rounded-xl border bg-white p-6">
-          <p className="text-sm text-gray-500">Total Earnings</p>
-          <p className="mt-1 text-3xl font-bold text-green-600">
-            ${earnings?.totalEarnings.toFixed(2) ?? '0.00'}
+        <div className="surface-card rounded-2xl p-6">
+          <p className="text-sm text-[var(--ink-soft)]">Total Earnings</p>
+          <p className="mt-1 text-3xl font-bold text-[#0f7a5b]">
+            ${Number(earnings?.totalEarnings ?? 0).toFixed(2)}
           </p>
         </div>
-        <div className="rounded-xl border bg-white p-6">
-          <p className="text-sm text-gray-500">Pending Payouts</p>
-          <p className="mt-1 text-3xl font-bold text-yellow-600">
-            ${earnings?.pendingPayouts.toFixed(2) ?? '0.00'}
+        <div className="surface-card rounded-2xl p-6">
+          <p className="text-sm text-[var(--ink-soft)]">Pending Payouts</p>
+          <p className="mt-1 text-3xl font-bold text-[#c68716]">
+            ${Number(earnings?.pendingPayouts ?? 0).toFixed(2)}
           </p>
         </div>
-        <div className="rounded-xl border bg-white p-6">
-          <p className="text-sm text-gray-500">Completed Sessions</p>
-          <p className="mt-1 text-3xl font-bold">{earnings?.completedPayouts ?? 0}</p>
+        <div className="surface-card rounded-2xl p-6">
+          <p className="text-sm text-[var(--ink-soft)]">Completed Sessions</p>
+          <p className="mt-1 text-3xl font-bold">{Number(earnings?.completedPayouts ?? 0)}</p>
         </div>
       </div>
 
-      {/* Recent Payments */}
       <h2 className="mb-4 text-lg font-semibold">Recent Payments</h2>
       {!earnings?.recentPayments.length ? (
-        <p className="text-gray-500">No payments yet.</p>
+        <p className="text-[var(--ink-soft)]">No payments yet.</p>
       ) : (
-        <div className="rounded-xl border bg-white">
+        <div className="surface-card overflow-x-auto rounded-2xl">
           <table className="w-full text-left text-sm">
-            <thead className="border-b bg-gray-50">
+            <thead className="border-b border-[#d9e5dc] bg-[#f3f8f4]">
               <tr>
                 <th className="px-4 py-3">Session</th>
                 <th className="px-4 py-3">Client</th>
@@ -109,17 +112,17 @@ export default function EarningsPage() {
             </thead>
             <tbody>
               {earnings.recentPayments.map((p) => (
-                <tr key={p.id} className="border-b last:border-b-0">
+                <tr key={p.id} className="border-b border-[#e2ece4] last:border-b-0 hover:bg-[#f8fcf9]">
                   <td className="px-4 py-3">{p.session?.goal?.title || 'Untitled'}</td>
                   <td className="px-4 py-3">{p.session?.user?.displayName || '-'}</td>
                   <td className="px-4 py-3">${Number(p.amount).toFixed(2)}</td>
                   <td className="px-4 py-3 font-medium">${Number(p.companionPayout).toFixed(2)}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_STYLES[p.status] || ''}`}>
+                    <span className={`rounded-full px-2 py-1 text-xs font-semibold ${STATUS_STYLES[p.status] || ''}`}>
                       {p.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-[var(--ink-soft)]">
                     {new Date(p.createdAt).toLocaleDateString()}
                   </td>
                 </tr>

@@ -1,0 +1,21 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hushroom mark">
+  <defs>
+    <linearGradient id="cap" x1="18" y1="19" x2="106" y2="87" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#17A47A"/>
+      <stop offset="1" stop-color="#0A6E52"/>
+    </linearGradient>
+    <linearGradient id="stem" x1="44" y1="61" x2="79" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7EA"/>
+      <stop offset="1" stop-color="#F0E4CC"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="110" rx="35" ry="8" fill="#D5E3DA"/>
+  <path d="M20 60C23 34 39 17 64 17C89 17 105 34 108 60C109 69 102 76 94 76H34C26 76 19 69 20 60Z" fill="url(#cap)"/>
+  <path d="M39 73H89V88C89 101 78 112 65 112H63C50 112 39 101 39 88V73Z" fill="url(#stem)"/>
+  <circle cx="48" cy="46" r="6" fill="#DBFFF3"/>
+  <circle cx="72" cy="38" r="7.5" fill="#DBFFF3"/>
+  <circle cx="87" cy="53" r="5.5" fill="#DBFFF3"/>
+  <circle cx="55.5" cy="82.5" r="2.5" fill="#2F5749"/>
+  <circle cx="72.5" cy="82.5" r="2.5" fill="#2F5749"/>
+  <path d="M53 90C55.6 94.2 58.4 96.2 63 96.2C67.6 96.2 70.5 94.2 73 90" stroke="#2F5749" stroke-width="3" stroke-linecap="round"/>
+</svg>

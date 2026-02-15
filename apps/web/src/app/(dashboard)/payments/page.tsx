@@ -49,24 +49,27 @@ export default function PaymentsPage() {
   }, []);
 
   if (isLoading) {
-    return <div className="p-8 text-center text-gray-500">Loading...</div>;
+    return <div className="p-8 text-center text-[var(--ink-soft)]">Loading...</div>;
   }
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Payment History</h1>
+      <h1 className="mb-2 text-3xl font-bold">Payment History</h1>
+      <p className="mb-6 text-sm text-[var(--ink-soft)]">
+        Transparent pricing for every session, including payout and platform fee.
+      </p>
 
       {payments.length === 0 ? (
-        <div className="rounded-xl border bg-white p-12 text-center">
-          <p className="text-gray-500">No payments yet.</p>
-          <Link href="/sessions/new" className="mt-4 inline-block text-blue-600 hover:underline">
+        <div className="surface-card rounded-2xl p-12 text-center">
+          <p className="text-[var(--ink-soft)]">No payments yet.</p>
+          <Link href="/sessions/new" className="mt-4 inline-block text-sm font-semibold text-[#0f7a5b] hover:text-[#0a6047]">
             Book a session
           </Link>
         </div>
       ) : (
-        <div className="rounded-xl border bg-white">
+        <div className="surface-card overflow-x-auto rounded-2xl">
           <table className="w-full text-left text-sm">
-            <thead className="border-b bg-gray-50">
+            <thead className="border-b border-[#d9e5dc] bg-[#f3f8f4]">
               <tr>
                 <th className="px-4 py-3">Session</th>
                 <th className="px-4 py-3">Companion</th>
@@ -77,9 +80,9 @@ export default function PaymentsPage() {
             </thead>
             <tbody>
               {payments.map((p) => (
-                <tr key={p.id} className="border-b last:border-b-0 hover:bg-gray-50">
+                <tr key={p.id} className="border-b border-[#e2ece4] last:border-b-0 hover:bg-[#f8fcf9]">
                   <td className="px-4 py-3">
-                    <Link href={`/sessions/${p.session.id}`} className="text-blue-600 hover:underline">
+                    <Link href={`/sessions/${p.session.id}`} className="font-semibold text-[#0f7a5b] hover:text-[#0a6047]">
                       {p.session.goal?.title || p.session.type.replace(/_/g, ' ')}
                     </Link>
                   </td>
@@ -90,11 +93,11 @@ export default function PaymentsPage() {
                     {p.currency === 'EUR' ? '\u20AC' : '$'}{Number(p.amount).toFixed(2)}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_STYLES[p.status] || ''}`}>
+                    <span className={`rounded-full px-2 py-1 text-xs font-semibold ${STATUS_STYLES[p.status] || ''}`}>
                       {p.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-[var(--ink-soft)]">
                     {new Date(p.createdAt).toLocaleDateString()}
                   </td>
                 </tr>

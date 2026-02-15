@@ -7,61 +7,61 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
 
   return (
-    <div className="py-8">
-      <h1 className="mb-2 text-2xl font-bold">
+    <div className="py-2 sm:py-4">
+      <h1 className="text-3xl font-bold">
         Welcome{user?.firstName ? `, ${user.firstName}` : ''}
       </h1>
-      <p className="mb-8 text-gray-500">
-        Your Hushroom dashboard. Upcoming sessions and activity will appear here.
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--ink-soft)]">
+        This is your command center for sessions, contracts, and accountability progress.
       </p>
 
       {user && !user.isEmailVerified && (
-        <div className="mb-6 rounded-md border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+        <div className="mt-5 rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
           Your email is not verified. Please check your inbox for a verification link.
         </div>
       )}
 
       {user && !user.isAgeVerified && (
-        <div className="mb-6 rounded-md border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+        <div className="mt-5 rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
           Age verification is required to book sessions.
         </div>
       )}
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h3 className="mb-2 font-semibold">Book a Session</h3>
-          <p className="mb-4 text-sm text-gray-500">
+      <div className="mt-8 grid gap-4 md:grid-cols-3">
+        <div className="surface-card card-lift rounded-2xl p-6">
+          <h3 className="text-lg font-semibold">Book a Session</h3>
+          <p className="mb-5 mt-2 text-sm text-[var(--ink-soft)]">
             Start a new goal-bound presence session with a companion.
           </p>
           <Link
             href="/sessions/new"
-            className="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="btn-primary inline-flex px-4 py-2 text-sm"
           >
             New Session
           </Link>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h3 className="mb-2 font-semibold">Session History</h3>
-          <p className="mb-4 text-sm text-gray-500">
+        <div className="surface-card card-lift rounded-2xl p-6">
+          <h3 className="text-lg font-semibold">Session History</h3>
+          <p className="mb-5 mt-2 text-sm text-[var(--ink-soft)]">
             View your past sessions, ratings, and outcomes.
           </p>
           <Link
             href="/sessions"
-            className="inline-block rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-secondary inline-flex px-4 py-2 text-sm"
           >
             View Sessions
           </Link>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h3 className="mb-2 font-semibold">Your Profile</h3>
-          <p className="mb-4 text-sm text-gray-500">
+        <div className="surface-card card-lift rounded-2xl p-6">
+          <h3 className="text-lg font-semibold">Your Profile</h3>
+          <p className="mb-5 mt-2 text-sm text-[var(--ink-soft)]">
             Manage your account settings and preferences.
           </p>
           <Link
             href="/profile"
-            className="inline-block rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-secondary inline-flex px-4 py-2 text-sm"
           >
             Edit Profile
           </Link>

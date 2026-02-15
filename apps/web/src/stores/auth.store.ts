@@ -53,7 +53,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('refreshToken', res.refreshToken);
       set({ user: res.user, isAuthenticated: true, isLoading: false });
     } catch (e) {
-      const msg = e instanceof ApiClientError ? e.message : 'Registration failed';
+      const msg =
+        e instanceof ApiClientError
+          ? e.message
+          : e instanceof TypeError
+            ? 'Cannot reach API. Make sure backend is running on http://localhost:3001'
+            : 'Registration failed';
       set({ error: msg, isLoading: false });
       throw e;
     }
@@ -67,7 +72,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('refreshToken', res.refreshToken);
       set({ user: res.user, isAuthenticated: true, isLoading: false });
     } catch (e) {
-      const msg = e instanceof ApiClientError ? e.message : 'Login failed';
+      const msg =
+        e instanceof ApiClientError
+          ? e.message
+          : e instanceof TypeError
+            ? 'Cannot reach API. Make sure backend is running on http://localhost:3001'
+            : 'Login failed';
       set({ error: msg, isLoading: false });
       throw e;
     }

@@ -7,7 +7,7 @@ import { useAuthStore } from '@/stores/auth.store';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, error, isLoading, clearError } = useAuthStore();
+  const { register, error, clearError } = useAuthStore();
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -17,6 +17,7 @@ export default function RegisterPage() {
     dateOfBirth: '',
   });
   const [localError, setLocalError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -38,6 +39,7 @@ export default function RegisterPage() {
     }
 
     try {
+      setIsSubmitting(true);
       await register({
         email: form.email,
         password: form.password,
@@ -48,23 +50,30 @@ export default function RegisterPage() {
       router.push('/dashboard');
     } catch {
       // Error is set in the store
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const displayError = localError || error;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-      <h2 className="mb-6 text-xl font-semibold">Create Account</h2>
+    <div>
+      <h2 className="text-2xl font-bold">Create Your Account</h2>
+      <p className="mt-1 text-sm text-[var(--ink-soft)]">
+        Start with a profile and book your first structured focus session.
+      </p>
 
       {displayError && (
-        <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{displayError}</div>
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {displayError}
+        </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="firstName" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="firstName" className="mb-1 block text-sm font-semibold text-[#314f43]">
               First Name
             </label>
             <input
@@ -73,11 +82,11 @@ export default function RegisterPage() {
               type="text"
               value={form.firstName}
               onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="input-field text-sm"
             />
           </div>
           <div>
-            <label htmlFor="lastName" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="lastName" className="mb-1 block text-sm font-semibold text-[#314f43]">
               Last Name
             </label>
             <input
@@ -86,13 +95,13 @@ export default function RegisterPage() {
               type="text"
               value={form.lastName}
               onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="input-field text-sm"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="mb-1 block text-sm font-semibold text-[#314f43]">
             Email
           </label>
           <input
@@ -102,13 +111,13 @@ export default function RegisterPage() {
             required
             value={form.email}
             onChange={handleChange}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="input-field text-sm"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="dateOfBirth" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="dateOfBirth" className="mb-1 block text-sm font-semibold text-[#314f43]">
             Date of Birth
           </label>
           <input
@@ -118,13 +127,13 @@ export default function RegisterPage() {
             required
             value={form.dateOfBirth}
             onChange={handleChange}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="input-field text-sm"
           />
-          <p className="mt-1 text-xs text-gray-500">You must be at least 18 years old</p>
+          <p className="mt-1 text-xs text-[var(--ink-soft)]">You must be at least 18 years old.</p>
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="mb-1 block text-sm font-semibold text-[#314f43]">
             Password
           </label>
           <input
@@ -134,7 +143,7 @@ export default function RegisterPage() {
             required
             value={form.password}
             onChange={handleChange}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="input-field text-sm"
             placeholder="Min 8 characters, uppercase, lowercase, number"
           />
         </div>
@@ -153,11 +162,11 @@ export default function RegisterPage() {
             required
             value={form.confirmPassword}
             onChange={handleChange}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="input-field text-sm"
           />
         </div>
 
-        <div className="rounded-md bg-gray-50 p-3 text-xs text-gray-600">
+        <div className="rounded-xl border border-[#d6e6dc] bg-[#f5fbf7] p-3 text-xs text-[#3f5f52]">
           By creating an account, you confirm that this is{' '}
           <strong>not therapy, coaching, or medical advice</strong>. Hushroom provides structured
           human presence only.
@@ -165,16 +174,16 @@ export default function RegisterPage() {
 
         <button
           type="submit"
-          disabled={isLoading}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          disabled={isSubmitting}
+          className="btn-primary w-full px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isLoading ? 'Creating account...' : 'Create Account'}
+          {isSubmitting ? 'Creating account...' : 'Create Account'}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="mt-6 text-center text-sm text-[var(--ink-soft)]">
         Already have an account?{' '}
-        <Link href="/login" className="text-blue-600 hover:underline">
+        <Link href="/login" className="font-semibold text-[#0f7a5b] hover:text-[#095f47]">
           Sign in
         </Link>
       </p>

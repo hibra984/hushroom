@@ -143,42 +143,43 @@ export default function AvailabilityPage() {
   if (isLoading) {
     return (
       <div className="py-8 text-center">
-        <p className="text-sm text-gray-500">Loading availability...</p>
+        <p className="text-sm text-[var(--ink-soft)]">Loading availability...</p>
       </div>
     );
   }
 
   return (
-    <div className="py-8">
-      <h1 className="mb-6 text-2xl font-bold">Availability</h1>
+    <div className="py-2 sm:py-4">
+      <h1 className="mb-2 text-3xl font-bold">Availability</h1>
+      <p className="mb-6 text-sm text-[var(--ink-soft)]">
+        Publish your recurring schedule and block specific dates when needed.
+      </p>
 
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
       )}
       {successMsg && (
-        <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">{successMsg}</div>
+        <div className="mb-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700">{successMsg}</div>
       )}
 
-      {/* Weekly Schedule */}
       <div className="mb-8">
         <h2 className="mb-3 text-lg font-semibold">Weekly Schedule</h2>
-        <p className="mb-4 text-sm text-gray-500">
+        <p className="mb-4 text-sm text-[var(--ink-soft)]">
           Set your recurring availability for each day of the week.
         </p>
 
-        {/* Existing slots grouped by day */}
         <div className="mb-4 space-y-2">
           {DAYS.map((day) => {
             const daySlots = recurringSlots.filter((s) => s.dayOfWeek === day);
             if (daySlots.length === 0) return null;
             return (
-              <div key={day} className="rounded-lg border border-gray-200 bg-white p-3">
+              <div key={day} className="surface-card rounded-2xl p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">{DAY_LABELS[day]}</span>
                   <div className="flex flex-wrap gap-2">
                     {daySlots.map((slot) => (
                       <div key={slot.id} className="flex items-center gap-1">
-                        <span className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+                        <span className="rounded bg-[#eaf4ff] px-2 py-0.5 text-xs text-[#265b86]">
                           {slot.startTime} - {slot.endTime}
                         </span>
                         <button
@@ -196,18 +197,17 @@ export default function AvailabilityPage() {
             );
           })}
           {recurringSlots.length === 0 && (
-            <p className="text-sm text-gray-400">No availability set. Add time slots below.</p>
+            <p className="text-sm text-[var(--ink-soft)]">No availability set. Add time slots below.</p>
           )}
         </div>
 
-        {/* Add slot form */}
-        <div className="flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-4">
+        <div className="glass-shell flex flex-wrap items-end gap-3 rounded-2xl p-4">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Day</label>
+            <label className="mb-1 block text-xs font-semibold text-[var(--ink-soft)]">Day</label>
             <select
               value={newDay}
               onChange={(e) => setNewDay(e.target.value)}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+              className="input-field text-sm"
             >
               {DAYS.map((d) => (
                 <option key={d} value={d}>
@@ -217,37 +217,36 @@ export default function AvailabilityPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Start</label>
+            <label className="mb-1 block text-xs font-semibold text-[var(--ink-soft)]">Start</label>
             <input
               type="time"
               value={newStart}
               onChange={(e) => setNewStart(e.target.value)}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+              className="input-field text-sm"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">End</label>
+            <label className="mb-1 block text-xs font-semibold text-[var(--ink-soft)]">End</label>
             <input
               type="time"
               value={newEnd}
               onChange={(e) => setNewEnd(e.target.value)}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+              className="input-field text-sm"
             />
           </div>
           <button
             onClick={handleAddSlot}
             disabled={isSaving}
-            className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="btn-primary rounded-xl px-4 py-2 text-sm disabled:opacity-50"
           >
             Add Slot
           </button>
         </div>
       </div>
 
-      {/* Blocked Dates */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Blocked Dates</h2>
-        <p className="mb-4 text-sm text-gray-500">
+        <p className="mb-4 text-sm text-[var(--ink-soft)]">
           Block specific dates when you are unavailable.
         </p>
 
@@ -256,7 +255,7 @@ export default function AvailabilityPage() {
             {blockedSlots.map((slot) => (
               <div
                 key={slot.id}
-                className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3"
+                className="surface-card flex items-center justify-between rounded-2xl p-3"
               >
                 <div className="text-sm">
                   <span className="font-medium">
@@ -271,7 +270,7 @@ export default function AvailabilityPage() {
                 <button
                   onClick={() => handleRemoveBlock(slot.id)}
                   disabled={isSaving}
-                  className="text-xs text-red-500 hover:text-red-700"
+                  className="text-xs font-semibold text-red-500 hover:text-red-700"
                 >
                   Remove
                 </button>
@@ -280,38 +279,38 @@ export default function AvailabilityPage() {
           </div>
         )}
 
-        <div className="flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-4">
+        <div className="glass-shell flex flex-wrap items-end gap-3 rounded-2xl p-4">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Date</label>
+            <label className="mb-1 block text-xs font-semibold text-[var(--ink-soft)]">Date</label>
             <input
               type="date"
               value={blockDate}
               onChange={(e) => setBlockDate(e.target.value)}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+              className="input-field text-sm"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Start</label>
+            <label className="mb-1 block text-xs font-semibold text-[var(--ink-soft)]">Start</label>
             <input
               type="time"
               value={blockStart}
               onChange={(e) => setBlockStart(e.target.value)}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+              className="input-field text-sm"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">End</label>
+            <label className="mb-1 block text-xs font-semibold text-[var(--ink-soft)]">End</label>
             <input
               type="time"
               value={blockEnd}
               onChange={(e) => setBlockEnd(e.target.value)}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+              className="input-field text-sm"
             />
           </div>
           <button
             onClick={handleBlockDate}
             disabled={isSaving || !blockDate}
-            className="rounded-md bg-red-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
           >
             Block Date
           </button>

@@ -7,32 +7,39 @@ import { useAuthStore } from '@/stores/auth.store';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, error, isLoading, clearError } = useAuthStore();
+  const { login, error, clearError } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
     try {
+      setIsSubmitting(true);
       await login(email, password);
       router.push('/dashboard');
     } catch {
       // Error is set in the store
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-      <h2 className="mb-6 text-xl font-semibold">Sign In</h2>
+    <div>
+      <h2 className="text-2xl font-bold">Welcome Back</h2>
+      <p className="mt-1 text-sm text-[var(--ink-soft)]">Sign in to continue your focus sessions.</p>
 
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="mb-1 block text-sm font-semibold text-[#314f43]">
             Email
           </label>
           <input
@@ -41,13 +48,13 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="input-field text-sm"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="mb-1 block text-sm font-semibold text-[#314f43]">
             Password
           </label>
           <input
@@ -56,29 +63,29 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="input-field text-sm"
             placeholder="Enter your password"
           />
         </div>
 
         <div className="flex items-center justify-between">
-          <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+          <Link href="/forgot-password" className="text-sm font-medium text-[#0f7a5b] hover:text-[#095f47]">
             Forgot password?
           </Link>
         </div>
 
         <button
           type="submit"
-          disabled={isLoading}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          disabled={isSubmitting}
+          className="btn-primary w-full px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isLoading ? 'Signing in...' : 'Sign In'}
+          {isSubmitting ? 'Signing in...' : 'Sign In'}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="mt-6 text-center text-sm text-[var(--ink-soft)]">
         Don&apos;t have an account?{' '}
-        <Link href="/register" className="text-blue-600 hover:underline">
+        <Link href="/register" className="font-semibold text-[#0f7a5b] hover:text-[#095f47]">
           Sign up
         </Link>
       </p>

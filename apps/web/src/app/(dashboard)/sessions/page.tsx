@@ -56,26 +56,31 @@ export default function SessionsPage() {
   const pastSessions = sessions.filter((s) => !activeStatuses.includes(s.status));
 
   return (
-    <div className="py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Sessions</h1>
+    <div className="py-2 sm:py-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">Sessions</h1>
+          <p className="mt-1 text-sm text-[var(--ink-soft)]">
+            Track active work blocks, outcomes, and completed contracts.
+          </p>
+        </div>
         <Link
           href="/sessions/new"
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="btn-primary px-4 py-2 text-sm"
         >
           Book New Session
         </Link>
       </div>
 
-      <div className="mb-6 flex gap-2">
+      <div className="glass-shell mb-6 flex flex-wrap gap-2 rounded-2xl p-3">
         {['', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => (
           <button
             key={s}
             onClick={() => { setFilter(s); setIsLoading(true); }}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
               filter === s
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-[#0f7e5f] text-white'
+                : 'bg-white text-[var(--ink-soft)] hover:bg-[#edf5f0]'
             }`}
           >
             {s || 'All'}
@@ -84,13 +89,13 @@ export default function SessionsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-500">Loading sessions...</p>
+        <p className="text-sm text-[var(--ink-soft)]">Loading sessions...</p>
       ) : sessions.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-          <p className="mb-4 text-gray-500">No sessions found.</p>
+        <div className="surface-card rounded-2xl p-8 text-center">
+          <p className="mb-4 text-[var(--ink-soft)]">No sessions found.</p>
           <Link
             href="/sessions/new"
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm font-semibold text-[#0f7a5b] hover:text-[#0a6047]"
           >
             Book your first session
           </Link>
@@ -132,16 +137,16 @@ function SessionCard({ session }: { session: Session }) {
   return (
     <Link
       href={`/sessions/${session.id}`}
-      className="block rounded-lg border border-gray-200 bg-white p-4 transition hover:border-gray-300 hover:shadow-sm"
+      className="surface-card card-lift block rounded-2xl p-4"
     >
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">
+            <span className="text-sm font-semibold text-[#123628]">
               {TYPE_LABELS[session.type] || session.type}
             </span>
             <span
-              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                 STATUS_COLORS[session.status] || 'bg-gray-100 text-gray-600'
               }`}
             >
@@ -149,10 +154,10 @@ function SessionCard({ session }: { session: Session }) {
             </span>
           </div>
           {session.goal && (
-            <p className="mt-1 text-sm text-gray-600">{session.goal.title}</p>
+            <p className="mt-1 text-sm text-[var(--ink-soft)]">{session.goal.title}</p>
           )}
         </div>
-        <div className="text-right text-xs text-gray-400">
+        <div className="text-right text-xs text-[var(--ink-soft)]">
           <div>{session.plannedDuration} min planned</div>
           <div>{new Date(session.createdAt).toLocaleDateString()}</div>
         </div>

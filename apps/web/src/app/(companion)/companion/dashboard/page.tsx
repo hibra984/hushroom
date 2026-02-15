@@ -74,7 +74,7 @@ export default function CompanionDashboardPage() {
   if (isLoading) {
     return (
       <div className="py-8 text-center">
-        <p className="text-sm text-gray-500">Loading dashboard...</p>
+        <p className="text-sm text-[var(--ink-soft)]">Loading dashboard...</p>
       </div>
     );
   }
@@ -83,7 +83,7 @@ export default function CompanionDashboardPage() {
     return (
       <div className="py-8 text-center">
         <p className="mb-4 text-sm text-red-600">{error || 'Profile not found'}</p>
-        <Link href="/companion/register" className="text-sm text-blue-600 hover:underline">
+        <Link href="/companion/register" className="text-sm font-semibold text-[#0f7a5b] hover:text-[#0a6047]">
           Register as Companion
         </Link>
       </div>
@@ -95,16 +95,21 @@ export default function CompanionDashboardPage() {
   );
 
   return (
-    <div className="py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Companion Dashboard</h1>
+    <div className="py-2 sm:py-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">Companion Dashboard</h1>
+          <p className="mt-1 text-sm text-[var(--ink-soft)]">
+            Monitor your availability, reputation, and active sessions in one place.
+          </p>
+        </div>
         <button
           onClick={handleToggleOnline}
           disabled={toggleLoading}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+          className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
             profile.isOnline
-              ? 'bg-green-100 text-green-800 hover:bg-green-200'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-[#d8f4e8] text-[#0d7a58] hover:bg-[#c7ecd9]'
+              : 'bg-[#edf3ef] text-[#5b7166] hover:bg-[#e2ebe5]'
           }`}
         >
           {profile.isOnline ? 'Online' : 'Offline'}
@@ -112,44 +117,42 @@ export default function CompanionDashboardPage() {
       </div>
 
       {profile.status !== 'APPROVED' && (
-        <div className="mb-6 rounded-md bg-yellow-50 p-3 text-sm text-yellow-700">
+        <div className="mb-6 rounded-xl border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-700">
           Your profile is currently <strong>{profile.status.replace(/_/g, ' ').toLowerCase()}</strong>.
           {profile.status === 'PENDING_REVIEW' && ' It will be reviewed by an admin shortly.'}
         </div>
       )}
 
-      {/* Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
+        <div className="surface-card rounded-2xl p-4">
           <div className="text-2xl font-bold">{profile.totalSessions}</div>
-          <div className="text-xs text-gray-500">Total Sessions</div>
+          <div className="text-xs text-[var(--ink-soft)]">Total Sessions</div>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <div className="text-2xl font-bold">{profile.successRate}%</div>
-          <div className="text-xs text-gray-500">Success Rate</div>
+        <div className="surface-card rounded-2xl p-4">
+          <div className="text-2xl font-bold">{Number(profile.successRate || 0)}%</div>
+          <div className="text-xs text-[var(--ink-soft)]">Success Rate</div>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <div className="text-2xl font-bold">{profile.averageRating.toFixed(1)}</div>
-          <div className="text-xs text-gray-500">Avg Rating</div>
+        <div className="surface-card rounded-2xl p-4">
+          <div className="text-2xl font-bold">{Number(profile.averageRating || 0).toFixed(1)}</div>
+          <div className="text-xs text-[var(--ink-soft)]">Avg Rating</div>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <div className="text-2xl font-bold">{profile.reputationScore.toFixed(0)}</div>
-          <div className="text-xs text-gray-500">Reputation</div>
+        <div className="surface-card rounded-2xl p-4">
+          <div className="text-2xl font-bold">{Number(profile.reputationScore || 0).toFixed(0)}</div>
+          <div className="text-xs text-[var(--ink-soft)]">Reputation</div>
         </div>
       </div>
 
-      {/* Active Sessions */}
       <div className="mb-8">
         <h2 className="mb-3 text-lg font-semibold">Active Sessions</h2>
         {activeSessions.length === 0 ? (
-          <p className="text-sm text-gray-500">No active sessions.</p>
+          <p className="text-sm text-[var(--ink-soft)]">No active sessions.</p>
         ) : (
           <div className="space-y-2">
             {activeSessions.map((session) => (
               <Link
                 key={session.id}
                 href={`/sessions/${session.id}`}
-                className="block rounded-lg border border-gray-200 bg-white p-4 transition hover:border-gray-300"
+                className="surface-card card-lift block rounded-2xl p-4"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -158,8 +161,8 @@ export default function CompanionDashboardPage() {
                       <span className="ml-2 text-sm text-gray-500">— {session.goal.title}</span>
                     )}
                   </div>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                       STATUS_COLORS[session.status] || 'bg-gray-100 text-gray-600'
                     }`}
                   >
@@ -172,30 +175,29 @@ export default function CompanionDashboardPage() {
         )}
       </div>
 
-      {/* Quick Actions */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Quick Actions</h2>
         <div className="grid gap-3 sm:grid-cols-3">
           <Link
             href="/companion/availability"
-            className="rounded-lg border border-gray-200 bg-white p-4 text-center transition hover:border-gray-300"
+            className="surface-card card-lift rounded-2xl p-4 text-center"
           >
             <div className="text-sm font-medium">Manage Availability</div>
-            <div className="mt-1 text-xs text-gray-500">Set your schedule</div>
+            <div className="mt-1 text-xs text-[var(--ink-soft)]">Set your schedule</div>
           </Link>
           <Link
             href="/companion/profile"
-            className="rounded-lg border border-gray-200 bg-white p-4 text-center transition hover:border-gray-300"
+            className="surface-card card-lift rounded-2xl p-4 text-center"
           >
             <div className="text-sm font-medium">Edit Profile</div>
-            <div className="mt-1 text-xs text-gray-500">Update bio & rates</div>
+            <div className="mt-1 text-xs text-[var(--ink-soft)]">Update bio and rates</div>
           </Link>
           <Link
             href="/sessions"
-            className="rounded-lg border border-gray-200 bg-white p-4 text-center transition hover:border-gray-300"
+            className="surface-card card-lift rounded-2xl p-4 text-center"
           >
             <div className="text-sm font-medium">Session History</div>
-            <div className="mt-1 text-xs text-gray-500">View past sessions</div>
+            <div className="mt-1 text-xs text-[var(--ink-soft)]">View past sessions</div>
           </Link>
         </div>
       </div>

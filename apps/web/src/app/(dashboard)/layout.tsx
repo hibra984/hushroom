@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -11,7 +11,16 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isAuthenticated, isLoading, logout, initialize } = useAuthStore();
+
+  const navLinks = [
+    { href: '/dashboard', label: 'Overview' },
+    { href: '/sessions', label: 'Sessions' },
+    { href: '/companions', label: 'Companions' },
+    { href: '/payments', label: 'Payments' },
+    { href: '/profile', label: 'Profile' },
+  ];
 
   useEffect(() => {
     initialize();
@@ -30,8 +39,10 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="surface-card rounded-2xl px-6 py-4 text-sm text-[var(--ink-soft)]">
+          Loading your dashboard...
+        </div>
       </div>
     );
   }
@@ -41,42 +52,58 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <Link href="/dashboard" className="text-lg font-bold">
-            Hushroom
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-              Dashboard
+    <div className="min-h-screen px-4 pb-8 pt-4 sm:px-6">
+      <nav className="glass-shell mx-auto max-w-7xl rounded-2xl px-4 py-3 sm:px-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center justify-between gap-3">
+            <Link href="/dashboard" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+              <img src="/hushroom-mark.svg" alt="Hushroom" className="h-8 w-8" />
+              <span>Hushroom</span>
             </Link>
-            <Link href="/sessions" className="text-sm text-gray-600 hover:text-gray-900">
-              Sessions
-            </Link>
-            <Link href="/companions" className="text-sm text-gray-600 hover:text-gray-900">
-              Companions
-            </Link>
-            <Link href="/payments" className="text-sm text-gray-600 hover:text-gray-900">
-              Payments
-            </Link>
-            <Link href="/profile" className="text-sm text-gray-600 hover:text-gray-900">
-              Profile
-            </Link>
-            <span className="text-sm text-gray-400">
+            <button
+              onClick={handleLogout}
+              className="rounded-full border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 hover:border-red-300 hover:bg-red-50 lg:hidden"
+            >
+              Sign Out
+            </button>
+          </div>
+
+          <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
+            {navLinks.map((link) => {
+              const isActive =
+                pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href));
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
+                    isActive
+                      ? 'bg-[#0f7e5f] text-white'
+                      : 'bg-white/70 text-[var(--ink-soft)] hover:bg-white hover:text-[var(--ink)]'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="hidden items-center gap-3 lg:flex">
+            <span className="text-sm text-[var(--ink-soft)]">
               {user?.displayName || user?.firstName || user?.email}
             </span>
             <button
               onClick={handleLogout}
-              className="text-sm text-red-600 hover:text-red-700"
+              className="rounded-full border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 hover:border-red-300 hover:bg-red-50"
             >
               Sign Out
             </button>
           </div>
         </div>
       </nav>
-      <main className="mx-auto max-w-7xl p-4">
-        {children}
+
+      <main className="mx-auto max-w-7xl pt-5">
+        <div className="surface-card rounded-3xl p-4 sm:p-6">{children}</div>
       </main>
     </div>
   );
