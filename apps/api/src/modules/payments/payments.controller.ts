@@ -6,6 +6,7 @@ import {
   Body,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { PaymentsService } from './payments.service';
 import { AuthorizePaymentDto } from './dto/authorize-payment.dto';
 import { RefundPaymentDto } from './dto/refund-payment.dto';
@@ -22,6 +23,7 @@ export class PaymentsController {
   ) {}
 
   @Post('authorize')
+  @Throttle({ short: { ttl: 60000, limit: 10 } })
   async authorize(
     @CurrentUser('id') userId: string,
     @Body() dto: AuthorizePaymentDto,
@@ -45,6 +47,7 @@ export class PaymentsController {
   }
 
   @Post(':id/refund')
+  @Throttle({ short: { ttl: 60000, limit: 10 } })
   async refund(
     @Param('id') id: string,
     @Body() dto: RefundPaymentDto,

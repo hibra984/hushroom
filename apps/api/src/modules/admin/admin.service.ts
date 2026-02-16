@@ -4,10 +4,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { EmailService } from '../../common/email/email.service';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   // ---- Users ----
 
@@ -75,14 +79,23 @@ export class AdminService {
   async approveCompanion(companionId: string) {
     const companion = await this.prisma.companionProfile.findUnique({
       where: { id: companionId },
+      include: { user: { select: { email: true, displayName: true, firstName: true } } },
     });
     if (!companion) throw new NotFoundException('Companion not found');
     if (companion.status !== 'PENDING_REVIEW')
       throw new BadRequestException('Companion is not pending review');
-    return this.prisma.companionProfile.update({
+    const updated = await this.prisma.companionProfile.update({
       where: { id: companionId },
       data: { status: 'APPROVED' },
     });
+
+    // Send approval email
+    if (companion.user?.email) {
+      const name = companion.user.displayName || companion.user.firstName || 'Companion';
+      this.emailService.sendCompanionApproved(companion.user.email, name).catch(() => {});
+    }
+
+    return updated;
   }
 
   async suspendCompanion(companionId: string) {

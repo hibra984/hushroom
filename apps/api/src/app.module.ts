@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -27,6 +28,7 @@ import { EmailModule } from './common/email/email.module';
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([
       {
         name: 'short',

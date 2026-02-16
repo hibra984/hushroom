@@ -4,9 +4,11 @@ import { SessionsService } from './sessions.service';
 import { SessionGateway } from './session.gateway';
 import { AuthModule } from '../auth/auth.module';
 import { PrismaModule } from '../../common/prisma/prisma.module';
+import { PaymentsModule } from '../payments/payments.module';
+import { EmailModule } from '../../common/email/email.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule],
+  imports: [AuthModule, PrismaModule, PaymentsModule, EmailModule],
   controllers: [SessionsController],
   providers: [SessionsService, SessionGateway],
   exports: [SessionsService],

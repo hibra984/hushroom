@@ -1,10 +1,12 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { StripeService } from './stripe.service';
 import { AuthorizePaymentDto } from './dto/authorize-payment.dto';
 import { RefundPaymentDto } from './dto/refund-payment.dto';
@@ -18,8 +20,11 @@ const COMMISSION_RATES: Record<string, number> = {
 
 @Injectable()
 export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
     private readonly stripe: StripeService,
   ) {}
 
@@ -270,7 +275,15 @@ export class PaymentsService {
     return { url: accountLink.url };
   }
 
-  async handleWebhookEvent(event: { type: string; data: { object: any } }) {
+  async handleWebhookEvent(event: { id: string; type: string; data: { object: any } }) {
+    // Idempotency: skip if this event was already processed
+    const idempotencyKey = `webhook:event:${event.id}`;
+    const alreadyProcessed = await this.redis.set(idempotencyKey, '1', 'EX', 86400, 'NX');
+    if (alreadyProcessed === null) {
+      this.logger.log(`Skipping duplicate webhook event ${event.id}`);
+      return;
+    }
+
     const obj = event.data.object;
 
     switch (event.type) {
@@ -286,11 +299,12 @@ export class PaymentsService {
         }
         break;
       }
+
       case 'payment_intent.payment_failed': {
         const payment = await this.prisma.payment.findUnique({
           where: { stripePaymentIntentId: obj.id },
         });
-        if (payment) {
+        if (payment && payment.status !== 'FAILED') {
           await this.prisma.payment.update({
             where: { id: payment.id },
             data: { status: 'FAILED' },
@@ -298,11 +312,12 @@ export class PaymentsService {
         }
         break;
       }
+
       case 'payment_intent.canceled': {
         const payment = await this.prisma.payment.findUnique({
           where: { stripePaymentIntentId: obj.id },
         });
-        if (payment) {
+        if (payment && payment.status !== 'CANCELLED') {
           await this.prisma.payment.update({
             where: { id: payment.id },
             data: { status: 'CANCELLED' },
@@ -310,6 +325,81 @@ export class PaymentsService {
         }
         break;
       }
+
+      case 'charge.refunded': {
+        const paymentIntentId = obj.payment_intent;
+        if (!paymentIntentId) break;
+        const payment = await this.prisma.payment.findUnique({
+          where: { stripePaymentIntentId: paymentIntentId },
+        });
+        if (payment && payment.status === 'CAPTURED') {
+          const refundedTotal = (obj.amount_refunded ?? 0) / 100;
+          const isFullRefund = refundedTotal >= Number(payment.amount);
+          await this.prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: isFullRefund ? 'REFUNDED' : 'PARTIALLY_REFUNDED',
+              refundedAt: new Date(),
+              refundAmount: refundedTotal,
+            },
+          });
+        }
+        break;
+      }
+
+      case 'charge.dispute.created': {
+        const paymentIntentId = obj.payment_intent;
+        if (!paymentIntentId) break;
+        const payment = await this.prisma.payment.findUnique({
+          where: { stripePaymentIntentId: paymentIntentId },
+          include: { session: true },
+        });
+        if (payment) {
+          await this.prisma.payment.update({
+            where: { id: payment.id },
+            data: { status: 'DISPUTED' },
+          });
+          // Log for admin review
+          await this.prisma.auditLog.create({
+            data: {
+              userId: payment.userId,
+              action: 'PAYMENT_DISPUTED',
+              entityType: 'Payment',
+              entityId: payment.id,
+              metadata: {
+                disputeId: obj.id,
+                reason: obj.reason,
+                amount: obj.amount,
+              },
+            },
+          });
+          this.logger.warn(`Payment ${payment.id} disputed — dispute ID: ${obj.id}, reason: ${obj.reason}`);
+        }
+        break;
+      }
+
+      case 'account.updated': {
+        const accountId = obj.id;
+        const companion = await this.prisma.companionProfile.findFirst({
+          where: { stripeConnectAccountId: accountId },
+        });
+        if (companion) {
+          const payoutsEnabled = obj.payouts_enabled ?? false;
+          const chargesEnabled = obj.charges_enabled ?? false;
+          await this.prisma.companionProfile.update({
+            where: { id: companion.id },
+            data: {
+              payoutsEnabled,
+              chargesEnabled,
+            },
+          });
+          this.logger.log(`Stripe Connect account ${accountId} updated: payouts=${payoutsEnabled}, charges=${chargesEnabled}`);
+        }
+        break;
+      }
+
+      default:
+        this.logger.debug(`Unhandled webhook event type: ${event.type}`);
     }
   }
 }

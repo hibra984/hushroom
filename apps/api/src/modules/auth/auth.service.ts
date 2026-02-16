@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { EmailService } from '../../common/email/email.service';
 
 const BCRYPT_ROUNDS = 12;
 const MIN_AGE = 18;
@@ -23,6 +24,7 @@ export class AuthService {
     private readonly redis: RedisService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   async register(dto: {
@@ -58,7 +60,8 @@ export class AuthService {
     const emailToken = uuidv4();
     await this.redis.set(`email-verify:${emailToken}`, user.id, 'EX', 86400);
 
-    // TODO: Send verification email in Phase 8 (notifications)
+    await this.emailService.sendVerificationEmail(user.email, emailToken);
+    await this.emailService.sendWelcome(user.email, dto.firstName || 'there');
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
 
@@ -183,7 +186,7 @@ export class AuthService {
     const resetToken = uuidv4();
     await this.redis.set(`password-reset:${resetToken}`, user.id, 'EX', 3600);
 
-    // TODO: Send password reset email in Phase 8
+    await this.emailService.sendPasswordReset(user.email, resetToken);
 
     return { message: 'If that email exists, a reset link has been sent' };
   }
@@ -210,6 +213,33 @@ export class AuthService {
     await this.redis.del(`password-reset:${token}`);
 
     return { message: 'Password reset successfully' };
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+
+    // Revoke all refresh tokens (force re-login on all devices)
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+
+    return { message: 'Password changed successfully. Please log in again.' };
   }
 
   async verifyAge(userId: string, dateOfBirth: string) {

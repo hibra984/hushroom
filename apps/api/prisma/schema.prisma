@@ -69,6 +69,7 @@ enum PaymentStatus {
   PARTIALLY_REFUNDED
   FAILED
   CANCELLED
+  DISPUTED
 }
 
 enum RefundReason {
@@ -100,6 +101,7 @@ enum AuditAction {
   COMPANION_APPROVE
   COMPANION_SUSPEND
   ADMIN_ACTION
+  PAYMENT_DISPUTED
   DATA_EXPORT
   DATA_DELETION
 }
@@ -169,6 +171,8 @@ model CompanionProfile {
   certifications         Json?
   identityVerified       Boolean         @default(false)
   stripeConnectAccountId String?         @unique
+  payoutsEnabled         Boolean         @default(false)
+  chargesEnabled         Boolean         @default(false)
   totalSessions          Int             @default(0)
   successRate            Decimal         @default(0) @db.Decimal(5, 2)
   averageRating          Decimal         @default(0) @db.Decimal(3, 2)

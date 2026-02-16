@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
 
 export interface EmailOptions {
   to: string;
@@ -9,22 +10,49 @@ export interface EmailOptions {
 }
 
 @Injectable()
-export class EmailService {
+export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
+  private transporter: nodemailer.Transporter | null = null;
 
   constructor(private config: ConfigService) {}
 
-  async send(options: EmailOptions): Promise<void> {
+  onModuleInit() {
     const smtpHost = this.config.get('SMTP_HOST');
+    if (smtpHost) {
+      this.transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: this.config.get<number>('SMTP_PORT', 587),
+        secure: this.config.get<number>('SMTP_PORT', 587) === 465,
+        auth: {
+          user: this.config.get('SMTP_USER'),
+          pass: this.config.get('SMTP_PASS'),
+        },
+      });
+      this.logger.log(`Email transport configured via ${smtpHost}`);
+    } else {
+      this.logger.warn('SMTP_HOST not configured — emails will be logged to console only');
+    }
+  }
 
-    if (!smtpHost) {
+  async send(options: EmailOptions): Promise<void> {
+    if (!this.transporter) {
       this.logger.log(`[EMAIL] To: ${options.to} | Subject: ${options.subject}`);
       this.logger.debug(`[EMAIL BODY] ${options.text || '(HTML email)'}`);
       return;
     }
 
-    // In production, integrate with nodemailer or an email API (SendGrid, SES, etc.)
-    this.logger.log(`Email sent to ${options.to}: ${options.subject}`);
+    try {
+      await this.transporter.sendMail({
+        from: this.config.get('EMAIL_FROM', 'noreply@hushroom.com'),
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+      });
+      this.logger.log(`Email sent to ${options.to}: ${options.subject}`);
+    } catch (error) {
+      this.logger.error(`Failed to send email to ${options.to}: ${error}`);
+    }
   }
 
   private webUrl(): string {
@@ -94,6 +122,55 @@ export class EmailService {
           </a>
         </div>
       `,
+    });
+  }
+
+  async sendVerificationEmail(to: string, token: string): Promise<void> {
+    const verifyUrl = `${this.webUrl()}/verify-email?token=${token}`;
+    await this.send({
+      to,
+      subject: 'Verify Your Hushroom Email',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="color: #1e293b;">Verify Your Email</h1>
+          <p style="color: #475569;">
+            Click the button below to verify your email address. This link expires in 24 hours.
+          </p>
+          <a href="${verifyUrl}"
+             style="display: inline-block; background: #2563eb; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; margin-top: 16px;">
+            Verify Email
+          </a>
+          <p style="color: #94a3b8; font-size: 12px; margin-top: 40px;">
+            If you didn't create an account, you can safely ignore this email.
+          </p>
+        </div>
+      `,
+      text: `Verify your email: ${verifyUrl}`,
+    });
+  }
+
+  async sendCompanionApproved(to: string, name: string): Promise<void> {
+    await this.send({
+      to,
+      subject: 'Your Hushroom Companion Application is Approved!',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="color: #1e293b;">Congratulations, ${name}!</h1>
+          <p style="color: #475569; line-height: 1.6;">
+            Your companion application has been approved. You can now start accepting sessions.
+          </p>
+          <ol style="color: #475569; line-height: 2;">
+            <li>Set up your availability schedule</li>
+            <li>Complete your Stripe payout setup</li>
+            <li>Go online to start receiving sessions</li>
+          </ol>
+          <a href="${this.webUrl()}/companion/dashboard"
+             style="display: inline-block; background: #2563eb; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; margin-top: 24px;">
+            Go to Companion Dashboard
+          </a>
+        </div>
+      `,
+      text: `Your companion application has been approved! Visit ${this.webUrl()}/companion/dashboard to get started.`,
     });
   }
 

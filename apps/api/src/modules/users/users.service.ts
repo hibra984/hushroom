@@ -137,6 +137,44 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    const [
+      languagePreferences,
+      sessions,
+      ratingsGiven,
+      ratingsReceived,
+      payments,
+      auditLogs,
+    ] = await Promise.all([
+      this.prisma.languagePreference.findMany({ where: { userId } }),
+      this.prisma.session.findMany({
+        where: { userId },
+        include: {
+          goal: true,
+          contract: true,
+          driftLogs: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.rating.findMany({
+        where: { raterId: userId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.rating.findMany({
+        where: { ratedUserId: userId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.payment.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.auditLog.findMany({
+        where: { userId },
+        orderBy: { timestamp: 'desc' },
+      }),
+    ]);
+
+    const { passwordHash, ...profile } = user;
+
     await this.prisma.auditLog.create({
       data: {
         userId,
@@ -146,6 +184,48 @@ export class UsersService {
       },
     });
 
-    return { message: 'Data export request received' };
+    return {
+      exportedAt: new Date().toISOString(),
+      profile,
+      languagePreferences,
+      sessions: sessions.map((s) => ({
+        id: s.id,
+        type: s.type,
+        status: s.status,
+        plannedDuration: s.plannedDuration,
+        startedAt: s.startedAt,
+        endedAt: s.endedAt,
+        durationMinutes: s.durationMinutes,
+        scheduledAt: s.scheduledAt,
+        createdAt: s.createdAt,
+        goal: s.goal,
+        contract: s.contract ? {
+          mode: s.contract.mode,
+          rules: s.contract.rules,
+          acceptedByUser: s.contract.acceptedByUser,
+          acceptedByCompanion: s.contract.acceptedByCompanion,
+          acceptedAt: s.contract.acceptedAt,
+        } : null,
+        driftLogs: s.driftLogs,
+      })),
+      ratingsGiven,
+      ratingsReceived,
+      payments: payments.map((p) => ({
+        id: p.id,
+        amount: p.amount,
+        currency: p.currency,
+        status: p.status,
+        authorizedAt: p.authorizedAt,
+        capturedAt: p.capturedAt,
+        refundedAt: p.refundedAt,
+        refundAmount: p.refundAmount,
+        createdAt: p.createdAt,
+      })),
+      auditLogs: auditLogs.map((a) => ({
+        action: a.action,
+        entityType: a.entityType,
+        timestamp: a.timestamp,
+      })),
+    };
   }
 }

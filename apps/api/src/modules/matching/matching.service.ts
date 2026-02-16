@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { EmailService } from '../../common/email/email.service';
 import { FindMatchDto } from './dto/find-match.dto';
 import { SelectCompanionDto } from './dto/select-companion.dto';
 import { validateTransition } from '../sessions/session-state.machine';
@@ -49,6 +50,7 @@ export class MatchingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly emailService: EmailService,
   ) {}
 
   async findMatches(userId: string, dto: FindMatchDto): Promise<ScoredCompanion[]> {
@@ -224,6 +226,20 @@ export class MatchingService {
     await this.redis.expire(key, RECENT_SESSION_WINDOW_DAYS * 86400);
 
     await this.redis.del(`matching:results:${dto.sessionId}`);
+
+    // Send booking confirmation email to the user
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    const sessionWithGoal = await this.prisma.session.findUnique({
+      where: { id: dto.sessionId },
+      include: { goal: true },
+    });
+    if (user?.email) {
+      this.emailService.sendSessionBooked(user.email, {
+        goalTitle: sessionWithGoal?.goal?.title ?? 'Session',
+        companionName: updated.companion?.user?.displayName ?? 'Your companion',
+        scheduledAt: updated.scheduledAt?.toISOString() ?? 'To be scheduled',
+      }).catch(() => {});
+    }
 
     return updated;
   }
